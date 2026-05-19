@@ -4,6 +4,15 @@ vim
 tmux
 terminator
 
+# Window manager
+# Mainline i3 (>=4.22) includes the former i3-gaps features.
+i3
+rofi
+picom
+feh
+scrot
+brightnessctl
+
 # Git
 git
 git-gui
