@@ -119,4 +119,13 @@ if ! grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc"; then
   printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
 fi
 
+#-----------------------------------------------------------
+# 9. Stow dotfiles (symlink each package directory into $HOME)
+#-----------------------------------------------------------
+echo "==> Stowing dotfiles"
+for pkg in "$DOTFILES"/*/; do
+  pkg_name="$(basename "$pkg")"
+  stow --dir="$DOTFILES" --target="$HOME" "$pkg_name"
+done
+
 echo "==> Done. Open a new shell to pick up PATH changes."
