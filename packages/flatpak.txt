@@ -1,0 +1,2 @@
+# Flatpak app IDs, installed from flathub.
+app.zen_browser.zen

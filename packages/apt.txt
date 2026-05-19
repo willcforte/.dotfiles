@@ -1,0 +1,44 @@
+# Editors / terminal
+neovim
+vim
+tmux
+terminator
+
+# Git
+git
+git-gui
+git-lfs
+gitk
+gh
+
+# Build tools
+build-essential
+autoconf
+libtool
+libncurses-dev
+
+# Dev / shell utilities
+stow
+curl
+wget
+ca-certificates
+software-properties-common
+nmap
+flameshot
+flatpak
+
+# Python
+python3-full
+python3-pip
+
+# SSH / networking
+openssh-server
+
+# Third-party repos (added by install.sh before this list is installed)
+google-chrome-stable
+containerd.io
+docker-ce
+docker-ce-cli
+docker-buildx-plugin
+docker-compose-plugin
+tailscale
