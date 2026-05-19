@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(apt-mark showmanual *)",
+      "Bash(pip3 list *)",
+      "Bash(pipx list *)",
+      "Bash(uv --version)",
+      "Bash(npm --version)",
+      "Bash(npm list *)",
+      "Read(//etc/apt/sources.list.d/**)",
+      "Read(//usr/share/ros-apt-source/**)",
+      "Read(//etc/apt/keyrings/**)",
+      "Read(//usr/share/keyrings/**)",
+      "Bash(nvim --version)",
+      "Bash(chmod +x /home/will/dotfiles/install.sh)",
+      "Bash(bash -n /home/will/dotfiles/install.sh)"
+    ]
+  }
+}
