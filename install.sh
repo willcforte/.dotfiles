@@ -19,8 +19,8 @@ echo "==> Updating apt and installing bootstrap tools"
 require_sudo
 sudo apt-get update
 sudo apt-get install -y \
-  ca-certificates curl wget gnupg lsb-release \
-  software-properties-common apt-transport-https
+  ca-certificates curl wget gnupg \
+  software-properties-common
 
 #-----------------------------------------------------------
 # 2. Third-party apt repos (keys + sources).
@@ -104,7 +104,16 @@ if ! command -v uv >/dev/null 2>&1; then
 fi
 
 #-----------------------------------------------------------
-# 7. Claude Code (official native installer)
+# 7. From-source installs (packages/from-source/*.sh)
+#-----------------------------------------------------------
+echo "==> Running from-source installs"
+for script in "$DOTFILES"/packages/from-source/*.sh; do
+  # shellcheck source=/dev/null
+  source "$script"
+done
+
+#-----------------------------------------------------------
+# 8. Claude Code (official native installer)
 #-----------------------------------------------------------
 if ! command -v claude >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/claude" ]; then
   echo "==> Installing Claude Code"
@@ -112,7 +121,7 @@ if ! command -v claude >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/claude" ]; th
 fi
 
 #-----------------------------------------------------------
-# 8. Ensure ~/.local/bin is on PATH for interactive bash shells.
+# 9. Ensure ~/.local/bin is on PATH for interactive bash shells.
 #-----------------------------------------------------------
 if ! grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc"; then
   echo "==> Adding ~/.local/bin to PATH in ~/.bashrc"
@@ -120,7 +129,7 @@ if ! grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc"; then
 fi
 
 #-----------------------------------------------------------
-# 9. Stow dotfiles (symlink each package directory into $HOME)
+# 10. Stow dotfiles (symlink each package directory into $HOME)
 #-----------------------------------------------------------
 echo "==> Stowing dotfiles"
 for pkg in "$DOTFILES"/*/; do
