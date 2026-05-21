@@ -20,6 +20,9 @@ nmap
 flameshot
 flatpak
 cron
+btop
+tldr
+lsd
 
 # Python
 python3-full
