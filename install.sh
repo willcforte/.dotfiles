@@ -112,7 +112,15 @@ if ! command -v uv >/dev/null 2>&1; then
 fi
 
 #-----------------------------------------------------------
-# 7b. Rust (via rustup)
+# 7b. Starship prompt
+#-----------------------------------------------------------
+if ! command -v starship >/dev/null 2>&1; then
+  echo "==> Installing Starship"
+  curl -sS https://starship.rs/install.sh | sh -s -- --yes
+fi
+
+#-----------------------------------------------------------
+# 7d. Rust (via rustup)
 #-----------------------------------------------------------
 if ! command -v rustup >/dev/null 2>&1; then
   echo "==> Installing Rust"
@@ -121,7 +129,7 @@ fi
 export PATH="$HOME/.cargo/bin:$PATH"
 
 #-----------------------------------------------------------
-# 7c. Cargo-installed CLI tools
+# 7e. Cargo-installed CLI tools
 #-----------------------------------------------------------
 echo "==> Installing cargo tools"
 cargo_install() {
@@ -171,6 +179,14 @@ fi
 if ! grep -qF 'zoxide init bash' "$HOME/.bashrc"; then
   echo "==> Adding zoxide init to ~/.bashrc"
   printf '\neval "$(zoxide init bash)"\n' >> "$HOME/.bashrc"
+fi
+
+#-----------------------------------------------------------
+# 9c. Starship init in ~/.bashrc
+#-----------------------------------------------------------
+if ! grep -qF 'starship init bash' "$HOME/.bashrc"; then
+  echo "==> Adding starship init to ~/.bashrc"
+  printf '\neval "$(starship init bash)"\n' >> "$HOME/.bashrc"
 fi
 
 #-----------------------------------------------------------
