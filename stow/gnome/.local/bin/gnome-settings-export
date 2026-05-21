@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Run this after changing GNOME settings to update the dotfiles snapshots.
+set -euo pipefail
+
+DOTFILES="$(git -C "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" rev-parse --show-toplevel)"
+
+# Terminal: include profile list/default keys even if at dconf defaults,
+# so `dconf load` on a fresh machine points to the right profile UUID.
+{
+  dconf dump /org/gnome/terminal/
+  # Ensure profiles list/default pointer are present; dconf dump omits them if
+  # they haven't been explicitly written (Ubuntu leaves them at GSettings default).
+  if ! dconf dump /org/gnome/terminal/ | grep -q '\[legacy/profiles:/\]'; then
+    PROFILE_UUID=$(dconf list /org/gnome/terminal/legacy/profiles:/ \
+      | grep -oE '[0-9a-f-]{36}' | head -1)
+    printf '\n[legacy/profiles:/]\ndefault=%s\nlist=[%s]\n' \
+      "'$PROFILE_UUID'" "'$PROFILE_UUID'"
+  fi
+} > "$DOTFILES/gnome/terminal.dconf"
+dconf dump /org/gnome/desktop/interface/ > "$DOTFILES/gnome/desktop.dconf"
+dconf dump /org/gnome/shell/extensions/ > "$DOTFILES/gnome/extensions.dconf"
+
+echo "Exported GNOME settings to $DOTFILES/gnome/"
+echo "Commit the .dconf files to save them."
