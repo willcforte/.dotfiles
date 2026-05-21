@@ -96,7 +96,15 @@ while IFS= read -r line; do
 done < packages/flatpak.txt
 
 #-----------------------------------------------------------
-# 6. uv (Astral Python toolchain)
+# 6. GitHub CLI auth (interactive — requires a browser)
+#-----------------------------------------------------------
+if ! gh auth status >/dev/null 2>&1; then
+  echo "==> Authenticating with GitHub"
+  gh auth login
+fi
+
+#-----------------------------------------------------------
+# 7. uv (Astral Python toolchain)
 #-----------------------------------------------------------
 if ! command -v uv >/dev/null 2>&1; then
   echo "==> Installing uv"
@@ -104,7 +112,36 @@ if ! command -v uv >/dev/null 2>&1; then
 fi
 
 #-----------------------------------------------------------
-# 7. From-source installs (packages/from-source/*.sh)
+# 7b. Rust (via rustup)
+#-----------------------------------------------------------
+if ! command -v rustup >/dev/null 2>&1; then
+  echo "==> Installing Rust"
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+fi
+export PATH="$HOME/.cargo/bin:$PATH"
+
+#-----------------------------------------------------------
+# 7c. Cargo-installed CLI tools
+#-----------------------------------------------------------
+echo "==> Installing cargo tools"
+cargo_install() {
+  local crate="$1" bin="$2"
+  if ! command -v "$bin" >/dev/null 2>&1; then
+    echo "    cargo install $crate"
+    cargo install "$crate"
+  else
+    echo "    already installed: $bin"
+  fi
+}
+cargo_install bat           bat
+cargo_install du-dust       dust
+cargo_install fd-find       fd
+cargo_install ripgrep_all   rga
+cargo_install procs         procs
+cargo_install zoxide        zoxide
+
+#-----------------------------------------------------------
+# 8. From-source installs (packages/from-source/*.sh)
 #-----------------------------------------------------------
 echo "==> Running from-source installs"
 for script in "$DOTFILES"/packages/from-source/*.sh; do
@@ -129,14 +166,15 @@ if ! grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc"; then
 fi
 
 #-----------------------------------------------------------
-# 10. Git identity
+# 9b. zoxide init in ~/.bashrc
 #-----------------------------------------------------------
-echo "==> Setting git identity"
-git config --global user.name "Will C. Forte"
-git config --global user.email "willcforte@gmail.com"
+if ! grep -qF 'zoxide init bash' "$HOME/.bashrc"; then
+  echo "==> Adding zoxide init to ~/.bashrc"
+  printf '\neval "$(zoxide init bash)"\n' >> "$HOME/.bashrc"
+fi
 
 #-----------------------------------------------------------
-# 11. Stow dotfiles (symlink each package under stow/ into $HOME)
+# 10. Stow dotfiles (symlink each package under stow/ into $HOME)
 #-----------------------------------------------------------
 echo "==> Stowing dotfiles"
 mkdir -p "$HOME/.claude"
@@ -146,23 +184,31 @@ for pkg in "$DOTFILES"/stow/*/; do
 done
 
 #-----------------------------------------------------------
-# 12. Install cron jobs.
+# 11. Cron jobs (additive — tagged entries, safe to re-run)
 #-----------------------------------------------------------
 echo "==> Installing cron jobs"
 if command -v crontab >/dev/null 2>&1; then
-  # claude-daily-todo: generate today's prioritized list at 09:00 every day.
-  CRON_TAG="# managed-by:claude-daily-todo"
-  CRON_LINE="0 9 * * * $HOME/.local/bin/claude-daily-todo  $CRON_TAG"
   current_crontab="$(crontab -l 2>/dev/null || true)"
-  if ! printf '%s\n' "$current_crontab" | grep -Fq "$CRON_TAG"; then
-    { printf '%s\n' "$current_crontab"; printf '%s\n' "$CRON_LINE"; } \
-      | sed '/^$/d' | crontab -
-    echo "    installed claude-daily-todo @ 09:00 daily"
-  else
-    echo "    claude-daily-todo cron entry already present"
-  fi
+
+  add_cron() {
+    local tag="$1" line="$2"
+    if ! printf '%s\n' "$current_crontab" | grep -Fq "$tag"; then
+      current_crontab="$(printf '%s\n%s\n' "$current_crontab" "$line" | sed '/^$/d')"
+      echo "    installed: $tag"
+    else
+      echo "    already present: $tag"
+    fi
+  }
+
+  add_cron "managed-by:claude-daily-todo" \
+    "0 9 * * * $HOME/.local/bin/claude-daily-todo  # managed-by:claude-daily-todo"
+
+  add_cron "managed-by:dotfiles-maintenance" \
+    "0 14 * * 0 cd $DOTFILES && $HOME/.local/bin/claude --dangerously-skip-permissions -p 'Review packages/apt.txt, snap.txt, and flatpak.txt for renamed or deprecated packages. Check install.sh for issues. Edit and commit any clear improvements with: git add -A && git commit -m chore: automated dotfiles maintenance. Do nothing if there is nothing to fix.' >> $HOME/.claude/cron.log 2>&1  # managed-by:dotfiles-maintenance"
+
+  printf '%s\n' "$current_crontab" | crontab -
 else
-  echo "    crontab not found; skipping cron install"
+  echo "    crontab not found; skipping"
 fi
 
 echo "==> Done. Open a new shell to pick up PATH changes."
