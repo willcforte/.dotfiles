@@ -184,6 +184,40 @@ for pkg in "$DOTFILES"/stow/*/; do
 done
 
 #-----------------------------------------------------------
+# 10b. GNOME settings (dconf import — idempotent)
+#-----------------------------------------------------------
+echo "==> Importing GNOME settings"
+if command -v dconf >/dev/null 2>&1; then
+  dconf load /org/gnome/terminal/        < "$DOTFILES/gnome/terminal.dconf"
+  dconf load /org/gnome/desktop/interface/ < "$DOTFILES/gnome/desktop.dconf"
+  dconf load /org/gnome/shell/extensions/ < "$DOTFILES/gnome/extensions.dconf"
+  echo "    imported terminal, desktop, and extension settings"
+else
+  echo "    dconf not found; skipping GNOME settings"
+fi
+
+#-----------------------------------------------------------
+# 10c. Zen Browser — link dotfiles into Flatpak profile
+#-----------------------------------------------------------
+echo "==> Linking Zen Browser dotfiles"
+ZEN_BASE="$HOME/.var/app/app.zen_browser.zen/.zen"
+if [ -f "$ZEN_BASE/installs.ini" ]; then
+  ZEN_PROFILE=$(grep 'Default=' "$ZEN_BASE/installs.ini" | head -1 | cut -d= -f2)
+  ZEN_PROFILE_DIR="$ZEN_BASE/$ZEN_PROFILE"
+  if [ -d "$ZEN_PROFILE_DIR" ]; then
+    ln -sf "$HOME/.config/zen-dotfiles/user.js" "$ZEN_PROFILE_DIR/user.js"
+    mkdir -p "$ZEN_PROFILE_DIR/chrome"
+    ln -sf "$HOME/.config/zen-dotfiles/chrome/userChrome.css" \
+           "$ZEN_PROFILE_DIR/chrome/userChrome.css"
+    echo "    linked to profile: $ZEN_PROFILE"
+  else
+    echo "    Zen profile dir not found ($ZEN_PROFILE); skipping"
+  fi
+else
+  echo "    Zen Browser not installed; skipping"
+fi
+
+#-----------------------------------------------------------
 # 11. Cron jobs (additive — tagged entries, safe to re-run)
 #-----------------------------------------------------------
 echo "==> Installing cron jobs"
