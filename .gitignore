@@ -1,0 +1,9 @@
+# Claude runtime state and secrets — never commit
+**/.claude/settings.local.json
+**/.claude/.credentials.json
+**/.claude/projects/
+**/.claude/todos/
+**/.claude/statsig/
+**/.claude/shell-snapshots/
+**/.claude/ide/
+**/.claude/history.jsonl

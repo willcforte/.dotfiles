@@ -136,12 +136,33 @@ git config --global user.name "Will C. Forte"
 git config --global user.email "willcforte@gmail.com"
 
 #-----------------------------------------------------------
-# 11. Stow dotfiles (symlink each package directory into $HOME)
+# 11. Stow dotfiles (symlink each package under stow/ into $HOME)
 #-----------------------------------------------------------
 echo "==> Stowing dotfiles"
-for pkg in "$DOTFILES"/*/; do
+mkdir -p "$HOME/.claude"
+for pkg in "$DOTFILES"/stow/*/; do
   pkg_name="$(basename "$pkg")"
-  stow --dir="$DOTFILES" --target="$HOME" "$pkg_name"
+  stow --dir="$DOTFILES/stow" --target="$HOME" "$pkg_name"
 done
+
+#-----------------------------------------------------------
+# 12. Install cron jobs.
+#-----------------------------------------------------------
+echo "==> Installing cron jobs"
+if command -v crontab >/dev/null 2>&1; then
+  # claude-daily-todo: generate today's prioritized list at 09:00 every day.
+  CRON_TAG="# managed-by:claude-daily-todo"
+  CRON_LINE="0 9 * * * $HOME/.local/bin/claude-daily-todo  $CRON_TAG"
+  current_crontab="$(crontab -l 2>/dev/null || true)"
+  if ! printf '%s\n' "$current_crontab" | grep -Fq "$CRON_TAG"; then
+    { printf '%s\n' "$current_crontab"; printf '%s\n' "$CRON_LINE"; } \
+      | sed '/^$/d' | crontab -
+    echo "    installed claude-daily-todo @ 09:00 daily"
+  else
+    echo "    claude-daily-todo cron entry already present"
+  fi
+else
+  echo "    crontab not found; skipping cron install"
+fi
 
 echo "==> Done. Open a new shell to pick up PATH changes."
