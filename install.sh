@@ -129,7 +129,14 @@ if ! grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc"; then
 fi
 
 #-----------------------------------------------------------
-# 10. Stow dotfiles (symlink each package directory into $HOME)
+# 10. Git identity
+#-----------------------------------------------------------
+echo "==> Setting git identity"
+git config --global user.name "Will C. Forte"
+git config --global user.email "willcforte@gmail.com"
+
+#-----------------------------------------------------------
+# 11. Stow dotfiles (symlink each package directory into $HOME)
 #-----------------------------------------------------------
 echo "==> Stowing dotfiles"
 for pkg in "$DOTFILES"/*/; do
