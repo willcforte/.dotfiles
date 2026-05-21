@@ -136,12 +136,13 @@ git config --global user.name "Will C. Forte"
 git config --global user.email "willcforte@gmail.com"
 
 #-----------------------------------------------------------
-# 11. Stow dotfiles (symlink each package directory into $HOME)
+# 11. Stow dotfiles (symlink each package under stow/ into $HOME)
 #-----------------------------------------------------------
 echo "==> Stowing dotfiles"
-for pkg in "$DOTFILES"/*/; do
+mkdir -p "$HOME/.claude"
+for pkg in "$DOTFILES"/stow/*/; do
   pkg_name="$(basename "$pkg")"
-  stow --dir="$DOTFILES" --target="$HOME" "$pkg_name"
+  stow --dir="$DOTFILES/stow" --target="$HOME" "$pkg_name"
 done
 
 echo "==> Done. Open a new shell to pick up PATH changes."
