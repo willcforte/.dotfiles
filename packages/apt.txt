@@ -19,6 +19,7 @@ stow
 nmap
 flameshot
 flatpak
+cron
 
 # Python
 python3-full
