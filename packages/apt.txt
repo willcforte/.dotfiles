@@ -32,9 +32,4 @@ openssh-server
 
 # Third-party repos (added by install.sh before this list is installed)
 google-chrome-stable
-containerd.io
-docker-ce
-docker-ce-cli
-docker-buildx-plugin
-docker-compose-plugin
 tailscale
