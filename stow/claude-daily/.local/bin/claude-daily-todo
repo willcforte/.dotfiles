@@ -67,7 +67,7 @@ EOF
 
 # --- Run Claude -------------------------------------------------------------
 # bypassPermissions lets MCP read-tools run without interactive prompts.
-LIST_OUTPUT="$(claude -p "$PROMPT" --permission-mode bypassPermissions)"
+LIST_OUTPUT="$(claude -p "$PROMPT")"
 
 if [ -z "${LIST_OUTPUT//[[:space:]]/}" ]; then
   echo "Empty output from claude — aborting without modifying daily note." >&2

@@ -75,6 +75,23 @@ echo "==> Installing apt packages"
 grep -vE '^\s*(#|$)' packages/apt.txt | xargs sudo apt-get install -y
 
 #-----------------------------------------------------------
+# 3b. Group memberships
+#-----------------------------------------------------------
+echo "==> Ensuring user group memberships"
+for group in docker; do
+  if getent group "$group" >/dev/null 2>&1; then
+    if ! id -nG "$USER" | grep -qw "$group"; then
+      sudo usermod -aG "$group" "$USER"
+      echo "    added $USER to $group (re-login or run: newgrp $group)"
+    else
+      echo "    already in $group"
+    fi
+  else
+    echo "    group $group does not exist; skipping"
+  fi
+done
+
+#-----------------------------------------------------------
 # 4. Snaps from packages/snap.txt (one per line, flags allowed)
 #-----------------------------------------------------------
 echo "==> Installing snaps"
@@ -166,6 +183,68 @@ if ! command -v claude >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/claude" ]; th
 fi
 
 #-----------------------------------------------------------
+# 8b. Claude Code MCP servers (CLI-scope, for non-interactive use)
+#
+# These configure MCP servers so `claude -p` (cron jobs, scripts) can access
+# external services. Each server requires a one-time interactive browser auth
+# after being added — run `claude` interactively and use the service once, or
+# run `/mcp` to trigger the auth flow.
+#
+# Google (Gmail + Calendar):
+#   Requires a Google Cloud OAuth Web app client. Steps:
+#   1. Go to console.cloud.google.com → APIs & Services → Credentials
+#   2. Enable: Gmail API, gmailmcp.googleapis.com, Calendar API, calendarmcp.googleapis.com
+#   3. Create an OAuth 2.0 Web application credential
+#   4. Add redirect URI: https://claude.ai/api/mcp/auth_callback
+#   5. Export GOOGLE_MCP_CLIENT_ID and GOOGLE_MCP_CLIENT_SECRET before running install.sh
+#   (or add them to a gitignored secrets file sourced at the top of this script)
+#-----------------------------------------------------------
+echo "==> Configuring Claude Code MCP servers"
+
+# Helper: add an HTTP MCP server only if not already present in ~/.claude.json
+add_mcp_http() {
+  local name="$1" url="$2" client_id="$3" port="$4"
+  if python3 -c "import json,sys; d=json.load(open('$HOME/.claude.json')); sys.exit(0 if '$name' in d.get('mcpServers',{}) else 1)" 2>/dev/null; then
+    echo "    already configured: $name"
+  else
+    claude mcp add --scope user --transport http \
+      --client-id "$client_id" \
+      --callback-port "$port" \
+      "$name" "$url"
+    echo "    added: $name (run claude interactively to authenticate)"
+  fi
+}
+
+# Slack (uses Slack's public OAuth client — no app creation needed)
+add_mcp_http slack https://mcp.slack.com/mcp 1601185624273.8899143856786 3118
+
+# Gmail + Google Calendar (requires GOOGLE_MCP_CLIENT_ID / GOOGLE_MCP_CLIENT_SECRET)
+if [ -n "${GOOGLE_MCP_CLIENT_ID:-}" ] && [ -n "${GOOGLE_MCP_CLIENT_SECRET:-}" ]; then
+  if python3 -c "import json,sys; d=json.load(open('$HOME/.claude.json')); sys.exit(0 if 'gmail' in d.get('mcpServers',{}) else 1)" 2>/dev/null; then
+    echo "    already configured: gmail"
+  else
+    MCP_CLIENT_SECRET="$GOOGLE_MCP_CLIENT_SECRET" claude mcp add --scope user --transport http \
+      --client-id "$GOOGLE_MCP_CLIENT_ID" \
+      --client-secret \
+      --callback-port 8080 \
+      gmail https://gmailmcp.googleapis.com/mcp/v1
+    echo "    added: gmail (run claude interactively to authenticate)"
+  fi
+  if python3 -c "import json,sys; d=json.load(open('$HOME/.claude.json')); sys.exit(0 if 'gcalendar' in d.get('mcpServers',{}) else 1)" 2>/dev/null; then
+    echo "    already configured: gcalendar"
+  else
+    MCP_CLIENT_SECRET="$GOOGLE_MCP_CLIENT_SECRET" claude mcp add --scope user --transport http \
+      --client-id "$GOOGLE_MCP_CLIENT_ID" \
+      --client-secret \
+      --callback-port 8081 \
+      gcalendar https://calendarmcp.googleapis.com/mcp/v1
+    echo "    added: gcalendar (run claude interactively to authenticate)"
+  fi
+else
+  echo "    skipping gmail/gcalendar: set GOOGLE_MCP_CLIENT_ID and GOOGLE_MCP_CLIENT_SECRET to configure"
+fi
+
+#-----------------------------------------------------------
 # 9. Ensure ~/.local/bin is on PATH for interactive bash shells.
 #-----------------------------------------------------------
 if ! grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc"; then
@@ -193,9 +272,32 @@ fi
 # 10. Stow dotfiles (symlink each package under stow/ into $HOME)
 #-----------------------------------------------------------
 echo "==> Stowing dotfiles"
-mkdir -p "$HOME/.claude"
+mkdir -p "$HOME/.claude" "$HOME/.local/bin"
 for pkg in "$DOTFILES"/stow/*/; do
   pkg_name="$(basename "$pkg")"
+  # Pre-remove any existing symlink (absolute or relative) or identical real file
+  # at each target path. Stow refuses to touch absolute symlinks and cannot replace
+  # real files, so we clear the way and let stow create fresh relative symlinks.
+  while IFS= read -r src; do
+    rel="${src#${pkg}}"
+    tgt="$HOME/$rel"
+    # Skip if the target resolves to a path inside the stow package (directory
+    # folding — stow already manages this via a parent directory symlink).
+    real_tgt="$(realpath "$tgt" 2>/dev/null || true)"
+    if [[ "$real_tgt" == "$DOTFILES"/stow/* ]]; then
+      continue
+    fi
+    if [ -L "$tgt" ]; then
+      rm "$tgt"
+    elif [ -f "$tgt" ]; then
+      if diff -q "$src" "$tgt" >/dev/null 2>&1; then
+        echo "    replacing identical real file with symlink: $tgt"
+        rm "$tgt"
+      else
+        echo "    WARNING: $tgt differs from dotfiles source — leaving it"
+      fi
+    fi
+  done < <(find "$pkg" -type f)
   stow --dir="$DOTFILES/stow" --target="$HOME" "$pkg_name"
 done
 
