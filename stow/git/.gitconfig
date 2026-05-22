@@ -1,11 +1,11 @@
 [user]
-	email = willcforte@gmail.com
 	name = Will C. Forte
+	email = willcforte@gmail.com
 [credential "https://github.com"]
-	helper = 
+	helper =
 	helper = !/usr/bin/gh auth git-credential
 [credential "https://gist.github.com"]
-	helper = 
+	helper =
 	helper = !/usr/bin/gh auth git-credential
 [push]
 	autoSetupRemote = true
