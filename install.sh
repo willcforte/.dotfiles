@@ -38,15 +38,6 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubc
 https://cli.github.com/packages stable main" \
   | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
 
-# Google Chrome
-if [ ! -f /etc/apt/keyrings/google-chrome.gpg ]; then
-  curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
-    | sudo gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg
-fi
-echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] \
-https://dl.google.com/linux/chrome/deb/ stable main" \
-  | sudo tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
-
 # Tailscale
 codename="$(. /etc/os-release && echo "$VERSION_CODENAME")"
 if [ ! -f /usr/share/keyrings/tailscale-archive-keyring.gpg ]; then
@@ -100,6 +91,7 @@ if ! command -v uv >/dev/null 2>&1; then
   echo "==> Installing uv"
   curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
+export PATH="$HOME/.local/bin:$PATH"
 
 #-----------------------------------------------------------
 # 7b. Starship prompt
@@ -148,11 +140,20 @@ for script in "$DOTFILES"/packages/from-source/*.sh; do
 done
 
 #-----------------------------------------------------------
-# 8. Claude Code (official native installer)
+# 8b. Node.js LTS (required for Claude Code)
 #-----------------------------------------------------------
-if ! command -v claude >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/claude" ]; then
+if ! command -v node >/dev/null 2>&1; then
+  echo "==> Installing Node.js LTS"
+  curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+  sudo apt-get install -y nodejs
+fi
+
+#-----------------------------------------------------------
+# 8c. Claude Code
+#-----------------------------------------------------------
+if ! command -v claude >/dev/null 2>&1; then
   echo "==> Installing Claude Code"
-  curl -fsSL https://claude.ai/install.sh | bash
+  npm install -g @anthropic-ai/claude-code
 fi
 
 #-----------------------------------------------------------
