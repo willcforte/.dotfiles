@@ -28,16 +28,6 @@ sudo apt-get install -y \
 echo "==> Adding third-party apt repos"
 sudo install -d -m 0755 /etc/apt/keyrings
 
-# Docker
-if [ ! -f /etc/apt/keyrings/docker.asc ]; then
-  sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
-    -o /etc/apt/keyrings/docker.asc
-  sudo chmod a+r /etc/apt/keyrings/docker.asc
-fi
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
-https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
-  | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
-
 # GitHub CLI
 if [ ! -f /etc/apt/keyrings/githubcli-archive-keyring.gpg ]; then
   curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
@@ -73,23 +63,6 @@ sudo apt-get update
 #-----------------------------------------------------------
 echo "==> Installing apt packages"
 grep -vE '^\s*(#|$)' packages/apt.txt | xargs sudo apt-get install -y
-
-#-----------------------------------------------------------
-# 3b. Group memberships
-#-----------------------------------------------------------
-echo "==> Ensuring user group memberships"
-for group in docker; do
-  if getent group "$group" >/dev/null 2>&1; then
-    if ! id -nG "$USER" | grep -qw "$group"; then
-      sudo usermod -aG "$group" "$USER"
-      echo "    added $USER to $group (re-login or run: newgrp $group)"
-    else
-      echo "    already in $group"
-    fi
-  else
-    echo "    group $group does not exist; skipping"
-  fi
-done
 
 #-----------------------------------------------------------
 # 4. Snaps from packages/snap.txt (one per line, flags allowed)

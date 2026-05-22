@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dependencies: git-lfs, gh, docker, uv (all provisioned by install.sh before this runs)
+# Dependencies: git-lfs, gh, uv (all provisioned by install.sh before this runs)
 
 PERSONA_RL_DIR="${PERSONA_RL_DIR:-$HOME/dev/persona_rl}"
 
