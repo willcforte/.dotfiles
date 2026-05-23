@@ -83,6 +83,7 @@ if ! gh auth status >/dev/null 2>&1; then
   echo "==> Authenticating with GitHub"
   gh auth login
 fi
+gh auth setup-git
 
 #-----------------------------------------------------------
 # 7. uv (Astral Python toolchain)
