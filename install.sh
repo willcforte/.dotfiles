@@ -236,29 +236,4 @@ else
   echo "    dconf not found; skipping GNOME settings"
 fi
 
-#-----------------------------------------------------------
-# 11. Cron jobs (additive — tagged entries, safe to re-run)
-#-----------------------------------------------------------
-echo "==> Installing cron jobs"
-if command -v crontab >/dev/null 2>&1; then
-  current_crontab="$(crontab -l 2>/dev/null || true)"
-
-  add_cron() {
-    local tag="$1" line="$2"
-    if ! printf '%s\n' "$current_crontab" | grep -Fq "$tag"; then
-      current_crontab="$(printf '%s\n%s\n' "$current_crontab" "$line" | sed '/^$/d')"
-      echo "    installed: $tag"
-    else
-      echo "    already present: $tag"
-    fi
-  }
-
-  add_cron "managed-by:claude-daily-todo" \
-    "0 9 * * * $HOME/.local/bin/claude-daily-todo  # managed-by:claude-daily-todo"
-
-  printf '%s\n' "$current_crontab" | crontab -
-else
-  echo "    crontab not found; skipping"
-fi
-
 echo "==> Done. Open a new shell to pick up PATH changes."
