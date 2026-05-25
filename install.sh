@@ -1,26 +1,19 @@
 #!/usr/bin/env bash
-# Idempotent installer for a fresh Ubuntu 24.04 machine.
+# Ubuntu 24.04.4 LTS
 set -euo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DOTFILES"
 
-require_sudo() {
-  if ! sudo -n true 2>/dev/null; then
-    echo "==> sudo password required for install"
-    sudo -v
-  fi
-}
+#-----------------------------------------------------------
+# 1. Bootstrap tools needed before adding third-party apt repos.
+#-----------------------------------------------------------
+echo "==> sudo password required for install"
+sudo -v
 
-#-----------------------------------------------------------
-# 1. Base tools needed before we can add third-party apt repos.
-#-----------------------------------------------------------
 echo "==> Updating apt and installing bootstrap tools"
-require_sudo
 sudo apt-get update
-sudo apt-get install -y \
-  ca-certificates curl wget gnupg \
-  software-properties-common
+sudo apt-get install -y ca-certificates curl wget gnupg software-properties-common
 
 #-----------------------------------------------------------
 # 2. Third-party apt repos (keys + sources).
@@ -29,34 +22,31 @@ echo "==> Adding third-party apt repos"
 sudo install -d -m 0755 /etc/apt/keyrings
 
 # GitHub CLI
-if [ ! -f /etc/apt/keyrings/githubcli-archive-keyring.gpg ]; then
-  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-    | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null
-  sudo chmod a+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
-fi
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+  | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null
+sudo chmod a+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] \
 https://cli.github.com/packages stable main" \
   | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
 
 # Tailscale
 codename="$(. /etc/os-release && echo "$VERSION_CODENAME")"
-if [ ! -f /usr/share/keyrings/tailscale-archive-keyring.gpg ]; then
-  curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.noarmor.gpg" \
-    | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
-fi
+curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.noarmor.gpg" \
+  | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
 curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.tailscale-keyring.list" \
   | sudo tee /etc/apt/sources.list.d/tailscale.list >/dev/null
 
 # VS Code
-if [ ! -f /etc/apt/keyrings/packages.microsoft.gpg ]; then
-  curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
-    | gpg --dearmor \
-    | sudo tee /etc/apt/keyrings/packages.microsoft.gpg >/dev/null
-  sudo chmod a+r /etc/apt/keyrings/packages.microsoft.gpg
-fi
+curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+  | gpg --dearmor \
+  | sudo tee /etc/apt/keyrings/packages.microsoft.gpg >/dev/null
+sudo chmod a+r /etc/apt/keyrings/packages.microsoft.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/packages.microsoft.gpg] \
 https://packages.microsoft.com/repos/code stable main" \
   | sudo tee /etc/apt/sources.list.d/vscode.list >/dev/null
+
+# Node.js LTS (for Claude Code)
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 
 sudo apt-get update
 
@@ -73,7 +63,7 @@ echo "==> Installing snaps"
 while IFS= read -r line; do
   case "$line" in ''|\#*) continue ;; esac
   # shellcheck disable=SC2086
-  sudo snap install $line
+  sudo snap install $line || sudo snap refresh $line
 done < packages/snap.txt
 
 #-----------------------------------------------------------
@@ -97,110 +87,64 @@ fi
 gh auth setup-git
 
 #-----------------------------------------------------------
-# 6. uv (Astral Python toolchain)
+# 7. uv (Astral Python toolchain)
 #-----------------------------------------------------------
-if ! command -v uv >/dev/null 2>&1; then
-  echo "==> Installing uv"
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-fi
+echo "==> Installing uv"
+curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 
 #-----------------------------------------------------------
-# 6b. Starship prompt
+# 8. Starship prompt
 #-----------------------------------------------------------
-if ! command -v starship >/dev/null 2>&1; then
-  echo "==> Installing Starship"
-  curl -sS https://starship.rs/install.sh | sh -s -- --yes
-fi
+echo "==> Installing Starship"
+curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
 #-----------------------------------------------------------
-# 6c. Rust (via rustup)
+# 9. Rust (via rustup) and cargo CLI tools
 #-----------------------------------------------------------
-if ! command -v rustup >/dev/null 2>&1; then
-  echo "==> Installing Rust"
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
-fi
+echo "==> Installing Rust"
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
 export PATH="$HOME/.cargo/bin:$PATH"
 
-#-----------------------------------------------------------
-# 6d. Cargo-installed CLI tools
-#-----------------------------------------------------------
 echo "==> Installing cargo tools"
-cargo_install() {
-  local crate="$1" bin="$2"
-  if ! command -v "$bin" >/dev/null 2>&1; then
-    echo "    cargo install $crate"
-    cargo install "$crate"
-  else
-    echo "    already installed: $bin"
-  fi
-}
-cargo_install bat           bat
-cargo_install du-dust       dust
-cargo_install fd-find       fd
-cargo_install ripgrep_all   rga
-cargo_install procs         procs
-cargo_install zoxide        zoxide
+cargo install bat du-dust fd-find ripgrep_all procs zoxide
 
 #-----------------------------------------------------------
-# 6e. Iosevka Nerd Font
+# 10. Iosevka Nerd Font
 #-----------------------------------------------------------
-if ! fc-list | grep -qi "iosevka nerd"; then
-  echo "==> Installing Iosevka Nerd Font"
-  FONT_DIR="$HOME/.local/share/fonts"
-  mkdir -p "$FONT_DIR"
-  IOSEVKA_URL="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Iosevka.tar.xz"
-  curl -fsSL "$IOSEVKA_URL" | tar -xJ -C "$FONT_DIR"
-  fc-cache -f "$FONT_DIR"
-fi
+echo "==> Installing Iosevka Nerd Font"
+FONT_DIR="$HOME/.local/share/fonts"
+mkdir -p "$FONT_DIR"
+curl -fsSL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Iosevka.tar.xz \
+  | tar -xJ -C "$FONT_DIR"
+fc-cache -f "$FONT_DIR"
 
 #-----------------------------------------------------------
-# 7. Claude Code (Node.js LTS is a prerequisite)
+# 11. Claude Code
 #-----------------------------------------------------------
-if ! command -v node >/dev/null 2>&1; then
-  echo "==> Installing Node.js LTS (required for Claude Code)"
-  curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-  sudo apt-get install -y nodejs
-fi
-if ! command -v claude >/dev/null 2>&1; then
-  echo "==> Installing Claude Code"
-  npm install -g @anthropic-ai/claude-code
-fi
+echo "==> Installing Claude Code"
+npm install -g @anthropic-ai/claude-code
 
 #-----------------------------------------------------------
-# 9. Ensure ~/.local/bin is on PATH for interactive bash shells.
+# 12. ~/.bashrc additions (guards necessary — appends are not idempotent)
 #-----------------------------------------------------------
 if ! grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc"; then
-  echo "==> Adding ~/.local/bin to PATH in ~/.bashrc"
   printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
 fi
-
-#-----------------------------------------------------------
-# 9b. zoxide init in ~/.bashrc
-#-----------------------------------------------------------
 if ! grep -qF 'zoxide init bash' "$HOME/.bashrc"; then
-  echo "==> Adding zoxide init to ~/.bashrc"
   printf '\neval "$(zoxide init bash)"\n' >> "$HOME/.bashrc"
 fi
-
-#-----------------------------------------------------------
-# 9c. Starship init in ~/.bashrc
-#-----------------------------------------------------------
 if ! grep -qF 'starship init bash' "$HOME/.bashrc"; then
-  echo "==> Adding starship init to ~/.bashrc"
   printf '\neval "$(starship init bash)"\n' >> "$HOME/.bashrc"
 fi
 
 #-----------------------------------------------------------
-# 10. Stow dotfiles (symlink each package under stow/ into $HOME)
+# 13. Stow dotfiles (symlink each package under stow/ into $HOME)
 #-----------------------------------------------------------
 echo "==> Stowing dotfiles"
 mkdir -p "$HOME/.claude" "$HOME/.local/bin"
 for pkg in "$DOTFILES"/stow/*/; do
   pkg_name="$(basename "$pkg")"
-  # Pre-remove any existing symlink (absolute or relative) or identical real file
-  # at each target path. Stow refuses to touch absolute symlinks and cannot replace
-  # real files, so we clear the way and let stow create fresh relative symlinks.
   while IFS= read -r src; do
     rel="${src#${pkg}}"
     tgt="$HOME/$rel"
@@ -225,11 +169,11 @@ for pkg in "$DOTFILES"/stow/*/; do
 done
 
 #-----------------------------------------------------------
-# 10b. GNOME settings (dconf import — idempotent)
+# 14. GNOME settings (dconf import — idempotent)
 #-----------------------------------------------------------
 echo "==> Importing GNOME settings"
 if command -v dconf >/dev/null 2>&1; then
-  dconf load /org/gnome/terminal/        < "$DOTFILES/gnome/terminal.dconf"
+  dconf load /org/gnome/terminal/         < "$DOTFILES/gnome/terminal.dconf"
   dconf load /org/gnome/desktop/interface/ < "$DOTFILES/gnome/desktop.dconf"
   dconf load /org/gnome/shell/extensions/ < "$DOTFILES/gnome/extensions.dconf"
   echo "    imported terminal, desktop, and extension settings"
