@@ -47,6 +47,17 @@ fi
 curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.tailscale-keyring.list" \
   | sudo tee /etc/apt/sources.list.d/tailscale.list >/dev/null
 
+# VS Code
+if [ ! -f /etc/apt/keyrings/packages.microsoft.gpg ]; then
+  curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+    | gpg --dearmor \
+    | sudo tee /etc/apt/keyrings/packages.microsoft.gpg >/dev/null
+  sudo chmod a+r /etc/apt/keyrings/packages.microsoft.gpg
+fi
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/packages.microsoft.gpg] \
+https://packages.microsoft.com/repos/code stable main" \
+  | sudo tee /etc/apt/sources.list.d/vscode.list >/dev/null
+
 sudo apt-get update
 
 #-----------------------------------------------------------
@@ -56,17 +67,7 @@ echo "==> Installing apt packages"
 grep -vE '^\s*(#|$)' packages/apt.txt | xargs sudo apt-get install -y
 
 #-----------------------------------------------------------
-# 4. Snaps from packages/snap.txt (one per line, flags allowed)
-#-----------------------------------------------------------
-echo "==> Installing snaps"
-while IFS= read -r line; do
-  case "$line" in ''|\#*) continue ;; esac
-  # shellcheck disable=SC2086
-  sudo snap install $line
-done < packages/snap.txt
-
-#-----------------------------------------------------------
-# 5. Flatpaks from packages/flatpak.txt (via flathub)
+# 4. Flatpaks from packages/flatpak.txt (via flathub)
 #-----------------------------------------------------------
 echo "==> Installing flatpaks"
 sudo flatpak remote-add --if-not-exists flathub \
@@ -77,7 +78,7 @@ while IFS= read -r line; do
 done < packages/flatpak.txt
 
 #-----------------------------------------------------------
-# 6. GitHub CLI auth (interactive — requires a browser)
+# 5. GitHub CLI auth (interactive — requires a browser)
 #-----------------------------------------------------------
 if ! gh auth status >/dev/null 2>&1; then
   echo "==> Authenticating with GitHub"
@@ -86,7 +87,7 @@ fi
 gh auth setup-git
 
 #-----------------------------------------------------------
-# 7. uv (Astral Python toolchain)
+# 6. uv (Astral Python toolchain)
 #-----------------------------------------------------------
 if ! command -v uv >/dev/null 2>&1; then
   echo "==> Installing uv"
@@ -95,7 +96,7 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 
 #-----------------------------------------------------------
-# 7b. Starship prompt
+# 6b. Starship prompt
 #-----------------------------------------------------------
 if ! command -v starship >/dev/null 2>&1; then
   echo "==> Installing Starship"
@@ -103,7 +104,7 @@ if ! command -v starship >/dev/null 2>&1; then
 fi
 
 #-----------------------------------------------------------
-# 7d. Rust (via rustup)
+# 6c. Rust (via rustup)
 #-----------------------------------------------------------
 if ! command -v rustup >/dev/null 2>&1; then
   echo "==> Installing Rust"
@@ -112,7 +113,7 @@ fi
 export PATH="$HOME/.cargo/bin:$PATH"
 
 #-----------------------------------------------------------
-# 7e. Cargo-installed CLI tools
+# 6d. Cargo-installed CLI tools
 #-----------------------------------------------------------
 echo "==> Installing cargo tools"
 cargo_install() {
@@ -132,7 +133,19 @@ cargo_install procs         procs
 cargo_install zoxide        zoxide
 
 #-----------------------------------------------------------
-# 8. From-source installs (packages/from-source/*.sh)
+# 6e. Iosevka Nerd Font
+#-----------------------------------------------------------
+if ! fc-list | grep -qi "iosevka nerd"; then
+  echo "==> Installing Iosevka Nerd Font"
+  FONT_DIR="$HOME/.local/share/fonts"
+  mkdir -p "$FONT_DIR"
+  IOSEVKA_URL="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Iosevka.tar.xz"
+  curl -fsSL "$IOSEVKA_URL" | tar -xJ -C "$FONT_DIR"
+  fc-cache -f "$FONT_DIR"
+fi
+
+#-----------------------------------------------------------
+# 7. From-source installs (packages/from-source/*.sh)
 #-----------------------------------------------------------
 echo "==> Running from-source installs"
 for script in "$DOTFILES"/packages/from-source/*.sh; do
@@ -141,82 +154,16 @@ for script in "$DOTFILES"/packages/from-source/*.sh; do
 done
 
 #-----------------------------------------------------------
-# 8b. Node.js LTS (required for Claude Code)
+# 8. Claude Code (Node.js LTS is a prerequisite)
 #-----------------------------------------------------------
 if ! command -v node >/dev/null 2>&1; then
-  echo "==> Installing Node.js LTS"
+  echo "==> Installing Node.js LTS (required for Claude Code)"
   curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
   sudo apt-get install -y nodejs
 fi
-
-#-----------------------------------------------------------
-# 8c. Claude Code
-#-----------------------------------------------------------
 if ! command -v claude >/dev/null 2>&1; then
   echo "==> Installing Claude Code"
   npm install -g @anthropic-ai/claude-code
-fi
-
-#-----------------------------------------------------------
-# 8b. Claude Code MCP servers (CLI-scope, for non-interactive use)
-#
-# These configure MCP servers so `claude -p` (cron jobs, scripts) can access
-# external services. Each server requires a one-time interactive browser auth
-# after being added — run `claude` interactively and use the service once, or
-# run `/mcp` to trigger the auth flow.
-#
-# Google (Gmail + Calendar):
-#   Requires a Google Cloud OAuth Web app client. Steps:
-#   1. Go to console.cloud.google.com → APIs & Services → Credentials
-#   2. Enable: Gmail API, gmailmcp.googleapis.com, Calendar API, calendarmcp.googleapis.com
-#   3. Create an OAuth 2.0 Web application credential
-#   4. Add redirect URI: https://claude.ai/api/mcp/auth_callback
-#   5. Export GOOGLE_MCP_CLIENT_ID and GOOGLE_MCP_CLIENT_SECRET before running install.sh
-#   (or add them to a gitignored secrets file sourced at the top of this script)
-#-----------------------------------------------------------
-echo "==> Configuring Claude Code MCP servers"
-
-# Helper: add an HTTP MCP server only if not already present in ~/.claude.json
-add_mcp_http() {
-  local name="$1" url="$2" client_id="$3" port="$4"
-  if python3 -c "import json,sys; d=json.load(open('$HOME/.claude.json')); sys.exit(0 if '$name' in d.get('mcpServers',{}) else 1)" 2>/dev/null; then
-    echo "    already configured: $name"
-  else
-    claude mcp add --scope user --transport http \
-      --client-id "$client_id" \
-      --callback-port "$port" \
-      "$name" "$url"
-    echo "    added: $name (run claude interactively to authenticate)"
-  fi
-}
-
-# Slack (uses Slack's public OAuth client — no app creation needed)
-add_mcp_http slack https://mcp.slack.com/mcp 1601185624273.8899143856786 3118
-
-# Gmail + Google Calendar (requires GOOGLE_MCP_CLIENT_ID / GOOGLE_MCP_CLIENT_SECRET)
-if [ -n "${GOOGLE_MCP_CLIENT_ID:-}" ] && [ -n "${GOOGLE_MCP_CLIENT_SECRET:-}" ]; then
-  if python3 -c "import json,sys; d=json.load(open('$HOME/.claude.json')); sys.exit(0 if 'gmail' in d.get('mcpServers',{}) else 1)" 2>/dev/null; then
-    echo "    already configured: gmail"
-  else
-    MCP_CLIENT_SECRET="$GOOGLE_MCP_CLIENT_SECRET" claude mcp add --scope user --transport http \
-      --client-id "$GOOGLE_MCP_CLIENT_ID" \
-      --client-secret \
-      --callback-port 8080 \
-      gmail https://gmailmcp.googleapis.com/mcp/v1
-    echo "    added: gmail (run claude interactively to authenticate)"
-  fi
-  if python3 -c "import json,sys; d=json.load(open('$HOME/.claude.json')); sys.exit(0 if 'gcalendar' in d.get('mcpServers',{}) else 1)" 2>/dev/null; then
-    echo "    already configured: gcalendar"
-  else
-    MCP_CLIENT_SECRET="$GOOGLE_MCP_CLIENT_SECRET" claude mcp add --scope user --transport http \
-      --client-id "$GOOGLE_MCP_CLIENT_ID" \
-      --client-secret \
-      --callback-port 8081 \
-      gcalendar https://calendarmcp.googleapis.com/mcp/v1
-    echo "    added: gcalendar (run claude interactively to authenticate)"
-  fi
-else
-  echo "    skipping gmail/gcalendar: set GOOGLE_MCP_CLIENT_ID and GOOGLE_MCP_CLIENT_SECRET to configure"
 fi
 
 #-----------------------------------------------------------
@@ -290,27 +237,6 @@ else
 fi
 
 #-----------------------------------------------------------
-# 10c. Zen Browser — link dotfiles into Flatpak profile
-#-----------------------------------------------------------
-echo "==> Linking Zen Browser dotfiles"
-ZEN_BASE="$HOME/.var/app/app.zen_browser.zen/.zen"
-if [ -f "$ZEN_BASE/installs.ini" ]; then
-  ZEN_PROFILE=$(grep 'Default=' "$ZEN_BASE/installs.ini" | head -1 | cut -d= -f2)
-  ZEN_PROFILE_DIR="$ZEN_BASE/$ZEN_PROFILE"
-  if [ -d "$ZEN_PROFILE_DIR" ]; then
-    ln -sf "$HOME/.config/zen-dotfiles/user.js" "$ZEN_PROFILE_DIR/user.js"
-    mkdir -p "$ZEN_PROFILE_DIR/chrome"
-    ln -sf "$HOME/.config/zen-dotfiles/chrome/userChrome.css" \
-           "$ZEN_PROFILE_DIR/chrome/userChrome.css"
-    echo "    linked to profile: $ZEN_PROFILE"
-  else
-    echo "    Zen profile dir not found ($ZEN_PROFILE); skipping"
-  fi
-else
-  echo "    Zen Browser not installed; skipping"
-fi
-
-#-----------------------------------------------------------
 # 11. Cron jobs (additive — tagged entries, safe to re-run)
 #-----------------------------------------------------------
 echo "==> Installing cron jobs"
@@ -329,9 +255,6 @@ if command -v crontab >/dev/null 2>&1; then
 
   add_cron "managed-by:claude-daily-todo" \
     "0 9 * * * $HOME/.local/bin/claude-daily-todo  # managed-by:claude-daily-todo"
-
-  add_cron "managed-by:dotfiles-maintenance" \
-    "0 14 * * 0 cd $DOTFILES && $HOME/.local/bin/claude --dangerously-skip-permissions -p 'Review packages/apt.txt, snap.txt, and flatpak.txt for renamed or deprecated packages. Check install.sh for issues. Edit and commit any clear improvements with: git add -A && git commit -m chore: automated dotfiles maintenance. Do nothing if there is nothing to fix.' >> $HOME/.claude/cron.log 2>&1  # managed-by:dotfiles-maintenance"
 
   printf '%s\n' "$current_crontab" | crontab -
 else
