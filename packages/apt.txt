@@ -28,5 +28,8 @@ openssh-server
 # Third-party repos (added by install.sh before this list is installed)
 tailscale
 
+# Node.js (repo added by install.sh before this list is installed)
+nodejs
+
 # VS Code
 code
