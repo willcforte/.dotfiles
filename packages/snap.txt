@@ -1,4 +1,0 @@
-# One snap per line. Append flags after the name (e.g. "--classic").
-code --classic
-peek
-obsidian --classic
