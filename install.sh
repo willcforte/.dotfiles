@@ -67,7 +67,17 @@ echo "==> Installing apt packages"
 grep -vE '^\s*(#|$)' packages/apt.txt | xargs sudo apt-get install -y
 
 #-----------------------------------------------------------
-# 4. Flatpaks from packages/flatpak.txt (via flathub)
+# 4. Snaps from packages/snap.txt
+#-----------------------------------------------------------
+echo "==> Installing snaps"
+while IFS= read -r line; do
+  case "$line" in ''|\#*) continue ;; esac
+  # shellcheck disable=SC2086
+  sudo snap install $line
+done < packages/snap.txt
+
+#-----------------------------------------------------------
+# 5. Flatpaks from packages/flatpak.txt (via flathub)
 #-----------------------------------------------------------
 echo "==> Installing flatpaks"
 sudo flatpak remote-add --if-not-exists flathub \
@@ -78,7 +88,7 @@ while IFS= read -r line; do
 done < packages/flatpak.txt
 
 #-----------------------------------------------------------
-# 5. GitHub CLI auth (interactive — requires a browser)
+# 6. GitHub CLI auth (interactive — requires a browser)
 #-----------------------------------------------------------
 if ! gh auth status >/dev/null 2>&1; then
   echo "==> Authenticating with GitHub"
@@ -145,16 +155,7 @@ if ! fc-list | grep -qi "iosevka nerd"; then
 fi
 
 #-----------------------------------------------------------
-# 7. From-source installs (packages/from-source/*.sh)
-#-----------------------------------------------------------
-echo "==> Running from-source installs"
-for script in "$DOTFILES"/packages/from-source/*.sh; do
-  # shellcheck source=/dev/null
-  source "$script"
-done
-
-#-----------------------------------------------------------
-# 8. Claude Code (Node.js LTS is a prerequisite)
+# 7. Claude Code (Node.js LTS is a prerequisite)
 #-----------------------------------------------------------
 if ! command -v node >/dev/null 2>&1; then
   echo "==> Installing Node.js LTS (required for Claude Code)"
