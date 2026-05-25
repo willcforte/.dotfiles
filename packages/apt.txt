@@ -1,14 +1,10 @@
 # Editors / terminal
 neovim
-vim
 tmux
-terminator
 
 # Git
 git
-git-gui
 git-lfs
-gitk
 gh
 
 # Build tools
@@ -16,7 +12,6 @@ build-essential
 
 # Dev / shell utilities
 stow
-nmap
 flameshot
 flatpak
 cron
@@ -31,9 +26,7 @@ python3-full
 openssh-server
 
 # Third-party repos (added by install.sh before this list is installed)
-containerd.io
-docker-ce
-docker-ce-cli
-docker-buildx-plugin
-docker-compose-plugin
 tailscale
+
+# VS Code
+code
