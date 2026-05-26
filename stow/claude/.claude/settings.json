@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | bash)"
+    ],
+    "defaultMode": "default",
+    "disableBypassPermissionsMode": "disable"
+  },
+  "model": "opus[1m]",
+  "effortLevel": "xhigh",
+  "autoMemoryEnabled": true,
+  "theme": "dark",
+  "editorMode": "normal",
+  "preferredNotifChannel": "auto",
+  "skipAutoPermissionPrompt": true
+}
