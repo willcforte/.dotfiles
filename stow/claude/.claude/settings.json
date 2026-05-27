@@ -8,7 +8,8 @@
       "Read(~/.dotfiles/stow/claude/.claude/CLAUDE.md)",
       "Read(~/.dotfiles/stow/claude/.claude/memory/**)",
       "Edit(~/.dotfiles/stow/claude/.claude/memory/**)",
-      "Write(~/.dotfiles/stow/claude/.claude/memory/**)"
+      "Write(~/.dotfiles/stow/claude/.claude/memory/**)",
+      "Read(~/Documents/Chop Wood, Carry Water/**)"
     ],
     "deny": [
       "Bash(rm -rf /)",
