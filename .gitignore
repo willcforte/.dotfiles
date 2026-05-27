@@ -7,3 +7,5 @@
 **/.claude/shell-snapshots/
 **/.claude/ide/
 **/.claude/history.jsonl
+**/.claude/policy-limits.json
+**/.claude/remote-settings.json
