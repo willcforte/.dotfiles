@@ -1,29 +1,6 @@
 {
-  "permissions": {
-    "allow": [
-      "Read(~/.claude/CLAUDE.md)",
-      "Read(~/.claude/memory/**)",
-      "Edit(~/.claude/memory/**)",
-      "Write(~/.claude/memory/**)",
-      "Read(~/.dotfiles/stow/claude/.claude/CLAUDE.md)",
-      "Read(~/.dotfiles/stow/claude/.claude/memory/**)",
-      "Edit(~/.dotfiles/stow/claude/.claude/memory/**)",
-      "Write(~/.dotfiles/stow/claude/.claude/memory/**)",
-      "Read(~/Documents/Chop Wood, Carry Water/**)"
-    ],
-    "deny": [
-      "Bash(rm -rf /)",
-      "Bash(curl * | bash)",
-      "Bash(wget * | bash)"
-    ],
-    "defaultMode": "default",
-    "disableBypassPermissionsMode": "disable"
-  },
-  "model": "opus[1m]",
-  "effortLevel": "xhigh",
-  "autoMemoryEnabled": true,
+  "model": "claude-opus-4-7[1m]",
+  "effortLevel": "medium",
   "theme": "dark",
-  "editorMode": "normal",
-  "preferredNotifChannel": "auto",
   "skipAutoPermissionPrompt": true
 }
