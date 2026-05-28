@@ -1,5 +1,5 @@
 {
-  "model": "claude-opus-4-7[1m]",
+  "model": "opus[1m]",
   "effortLevel": "medium",
   "theme": "dark",
   "skipAutoPermissionPrompt": true
