@@ -4,41 +4,19 @@
 
   home.stateVersion = "25.05";
 
+  # Packages only — their configs are stowed (stow/git/.gitconfig,
+  # stow/tmux/.tmux.conf) and take precedence over anything
+  # home-manager would generate. Keep config out of here.
   home.packages = with pkgs; [
     git
     gh
     neovim
     tmux
     btop
+    tree
+    lazygit
+    lazydocker
   ];
-
-  programs.tmux = {
-    enable = true;
-    clock24 = false;
-    extraConfig = ''
-      set -g mouse on
-    '';
-  };
-
-  programs.git = {
-    enable = true;
-    settings = {
-      user = {
-        name = "Will C. Forte";
-        email = "willcforte@gmail.com";
-      };
-      credential."https://github.com" = {
-        helper = "!${pkgs.gh}/bin/gh auth git-credential";
-      };
-    };
-  };
-
-  programs.gh = {
-    enable = true;
-    gitCredentialHelper = {
-      enable = false;
-    };
-  };
 
   programs.bash.shellAliases.ccode = "claude";
 
