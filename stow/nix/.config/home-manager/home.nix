@@ -25,10 +25,8 @@
     ripgrep
     ripgrep-all
     procs
-    zoxide
 
-    # Formerly curl-pipe-sh installers in install.sh
-    starship
+    # Formerly a curl-pipe-sh installer in install.sh
     uv
 
     # Terminal emulator — config is stowed (.wezterm.lua)
@@ -49,7 +47,51 @@
   # and icons of nix-installed GUI apps (e.g. zen-beta).
   targets.genericLinux.enable = true;
 
-  programs.bash.shellAliases.ccode = "claude";
+  # home-manager owns ~/.bashrc and ~/.profile (first switch on a machine
+  # needs `switch -b backup` to move the pre-existing real files aside).
+  # Machine-specific lines and secrets go in ~/.bashrc.local — never here.
+  programs.bash = {
+    enable = true;
+    # Match Ubuntu's stock history behavior.
+    historyControl = [ "ignoreboth" ];
+    historySize = 1000;
+    historyFileSize = 2000;
+    shellAliases = {
+      ccode = "claude";
+      ls = "ls --color=auto";
+      grep = "grep --color=auto";
+      ll = "ls -alF";
+      la = "ls -A";
+      l = "ls -CF";
+    };
+    initExtra = ''
+      # bash-completion (Ubuntu system package)
+      if ! shopt -oq posix; then
+        if [ -f /usr/share/bash-completion/bash_completion ]; then
+          . /usr/share/bash-completion/bash_completion
+        elif [ -f /etc/bash_completion ]; then
+          . /etc/bash_completion
+        fi
+      fi
+
+      export PATH="$HOME/.local/bin:$PATH"
+
+      # Rust toolchain (rustup is installed by install.sh)
+      [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+
+      # Nix daemon env for non-login shells
+      [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ] \
+        && . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+
+      # Machine-specific config and secrets (not in dotfiles repo)
+      [ -f "$HOME/.bashrc.local" ] && . "$HOME/.bashrc.local"
+    '';
+  };
+
+  # Shell integrations — these enable the packages AND wire up their
+  # bash init hooks declaratively.
+  programs.starship.enable = true;
+  programs.zoxide.enable = true;
 
   programs.home-manager.enable = true;
 }
