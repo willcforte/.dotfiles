@@ -1,8 +1,8 @@
 {
-  description = "Home manager config for Ubuntu.";
+  description = "Will's Nix config for Ubuntu 24 LTS dev.";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
     claude-code-nix.url = "github:sadjow/claude-code-nix";
 
     home-manager = {
