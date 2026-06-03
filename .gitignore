@@ -1,11 +1,9 @@
-# Personal / private — kept local only, never published
 **/.claude/memory/
 **/.claude/plans/
 **/.claude/commands/
 **/.claude/CLAUDE.md
 packages/from-source/persona_rl.sh
 
-# Claude runtime state and secrets — never commit
 **/.claude/settings.local.json
 **/.claude/.credentials.json
 **/.claude/projects/
