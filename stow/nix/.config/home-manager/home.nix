@@ -18,6 +18,11 @@
     lazydocker
   ];
 
+  # Non-NixOS (Ubuntu) integration: adds ~/.nix-profile/share to
+  # XDG_DATA_DIRS (via environment.d) so GNOME finds desktop entries
+  # and icons of nix-installed GUI apps (e.g. zen-beta).
+  targets.genericLinux.enable = true;
+
   programs.bash.shellAliases.ccode = "claude";
 
   programs.home-manager.enable = true;
