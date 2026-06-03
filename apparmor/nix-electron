@@ -1,0 +1,22 @@
+# AppArmor profile for nixpkgs' shared Electron runtime (used by
+# obsidian and other electron apps that don't bundle their own).
+#
+# Ubuntu 24.04 denies unprivileged user namespaces by default
+# (kernel.apparmor_restrict_unprivileged_userns=1), which Chromium-based
+# apps need for their content-process sandbox. Without userns they fall
+# back to the SUID chrome-sandbox helper, which can never work from the
+# nix store (no setuid), and abort. Like Ubuntu's own browser profiles,
+# this allows everything and exists only to grant userns. Globbed so nix
+# store path changes (version bumps) keep matching.
+#
+# Installed to /etc/apparmor.d/nix-electron by install.sh.
+
+abi <abi/4.0>,
+include <tunables/global>
+
+profile nix-electron /nix/store/*/bin/electron flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/nix-electron>
+}

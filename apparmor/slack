@@ -1,0 +1,15 @@
+# AppArmor profile for the nix-installed Slack (bundles its own
+# Electron at lib/slack/slack — the shared nix-electron profile does
+# not cover it). See apparmor/nix-electron for the userns rationale.
+#
+# Installed to /etc/apparmor.d/slack by install.sh.
+
+abi <abi/4.0>,
+include <tunables/global>
+
+profile slack /nix/store/*/lib/slack/slack flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/slack>
+}

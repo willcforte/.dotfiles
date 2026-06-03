@@ -1,0 +1,15 @@
+# AppArmor profile for the nix-installed VS Code (bundles its own
+# Electron at lib/vscode/code — the shared nix-electron profile does
+# not cover it). See apparmor/nix-electron for the userns rationale.
+#
+# Installed to /etc/apparmor.d/vscode by install.sh.
+
+abi <abi/4.0>,
+include <tunables/global>
+
+profile vscode /nix/store/*/lib/vscode/code flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/vscode>
+}
