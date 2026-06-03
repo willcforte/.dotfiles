@@ -173,7 +173,7 @@ done
 #     lazygit, lazydocker, claude-code, zen-browser — see home.nix)
 #-----------------------------------------------------------
 echo "==> Applying home-manager configuration"
-nix run home-manager/master -- switch \
+nix run home-manager/release-25.05 -- switch \
   --flake "$DOTFILES/stow/nix/.config/home-manager"
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
