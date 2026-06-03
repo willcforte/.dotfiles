@@ -87,23 +87,7 @@ if [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
 fi
 
 #-----------------------------------------------------------
-# 8. ~/.bashrc additions (guards necessary — appends are not idempotent)
-#-----------------------------------------------------------
-if ! grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc"; then
-  printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
-fi
-if ! grep -qF 'zoxide init bash' "$HOME/.bashrc"; then
-  printf '\neval "$(zoxide init bash)"\n' >> "$HOME/.bashrc"
-fi
-if ! grep -qF 'starship init bash' "$HOME/.bashrc"; then
-  printf '\neval "$(starship init bash)"\n' >> "$HOME/.bashrc"
-fi
-if ! grep -qF 'nix-daemon.sh' "$HOME/.bashrc"; then
-  printf '\n[ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ] && . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh\n' >> "$HOME/.bashrc"
-fi
-
-#-----------------------------------------------------------
-# 9. Stow dotfiles (symlink each package under stow/ into $HOME)
+# 8. Stow dotfiles (symlink each package under stow/ into $HOME)
 #-----------------------------------------------------------
 echo "==> Stowing dotfiles"
 mkdir -p "$HOME/.claude" "$HOME/.local/bin"
@@ -133,16 +117,18 @@ for pkg in "$DOTFILES"/stow/*/; do
 done
 
 #-----------------------------------------------------------
-# 10. home-manager (CLI packages: neovim, tmux, btop, gh, tree,
-#     lazygit, lazydocker, claude-code, zen-browser — see home.nix)
+# 9. home-manager (packages + bash/starship/zoxide shell config —
+#    see home.nix). -b backup moves aside pre-existing real files
+#    that home-manager needs to own (e.g. Ubuntu's stock ~/.bashrc
+#    and ~/.profile on first run → ~/.bashrc.backup).
 #-----------------------------------------------------------
 echo "==> Applying home-manager configuration"
-nix run home-manager/release-25.05 -- switch \
+nix run home-manager/release-25.05 -- switch -b backup \
   --flake "$DOTFILES/stow/nix/.config/home-manager"
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
 #-----------------------------------------------------------
-# 11. GitHub CLI auth (interactive — requires a browser).
+# 10. GitHub CLI auth (interactive — requires a browser).
 #     gh comes from home-manager; credential helper is configured
 #     in the stowed .gitconfig, so no `gh auth setup-git` needed.
 #-----------------------------------------------------------
@@ -152,7 +138,7 @@ if ! gh auth status >/dev/null 2>&1; then
 fi
 
 #-----------------------------------------------------------
-# 12. AppArmor: allow user namespaces for nix zen-beta
+# 11. AppArmor: allow user namespaces for nix zen-beta
 #     (Ubuntu 24.04 blocks unprivileged userns; Firefox-based
 #     browsers need it for their content-process sandbox)
 #-----------------------------------------------------------
@@ -161,7 +147,7 @@ sudo install -m 0644 "$DOTFILES/apparmor/zen-beta" /etc/apparmor.d/zen-beta
 sudo apparmor_parser -r /etc/apparmor.d/zen-beta
 
 #-----------------------------------------------------------
-# 13. GNOME settings (dconf import — idempotent)
+# 12. GNOME settings (dconf import — idempotent)
 #-----------------------------------------------------------
 echo "==> Importing GNOME settings"
 if command -v dconf >/dev/null 2>&1; then
