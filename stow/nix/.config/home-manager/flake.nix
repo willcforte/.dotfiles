@@ -16,19 +16,24 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+
+      flakePkgs = { home.packages = [
+        claude-code-nix.packages.${system}.claude-code
+        zen-browser.packages.${system}.default
+      ]; };
+
+      # Base config plus optional host-specific modules.
+      # `home-manager switch` picks "will@<hostname>" when it exists,
+      # falling back to plain "will" on hosts without their own module.
+      mkHome = modules: home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = [ ./home.nix flakePkgs ] ++ modules;
+      };
     in {
       homeConfigurations = {
-        "will" = home-manager.lib.homeManagerConfiguration {
-	  inherit pkgs;
-
-	  modules = [
-	    ./home.nix
-	    { home.packages = [
-	        claude-code-nix.packages.${system}.claude-code
-	        zen-browser.packages.${system}.default
-	      ]; }
-	  ];
-	};
+        "will" = mkHome [ ];
+        "will@will-pc14250" = mkHome [ ./hosts/will-pc14250.nix ];
+        "will@persona-0020" = mkHome [ ./hosts/persona-0020.nix ];
       };
     };
 }
