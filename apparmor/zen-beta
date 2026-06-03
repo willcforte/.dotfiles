@@ -1,0 +1,20 @@
+# AppArmor profile for the nix-installed Zen Browser (home-manager flake).
+#
+# Ubuntu 24.04 denies unprivileged user namespaces by default
+# (kernel.apparmor_restrict_unprivileged_userns=1), which Firefox-based
+# browsers need for their content-process sandbox. Like Ubuntu's own
+# /etc/apparmor.d/firefox, this profile allows everything and exists only
+# to grant userns to the binary. Globbed so nix store path changes
+# (version bumps) keep matching.
+#
+# Installed to /etc/apparmor.d/zen-beta by install.sh.
+
+abi <abi/4.0>,
+include <tunables/global>
+
+profile zen-beta /nix/store/*/bin/{zen-beta,.zen-beta-wrapped} flags=(unconfined) {
+  userns,
+
+  # Site-specific additions and overrides. See local/README for details.
+  include if exists <local/zen-beta>
+}
