@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
     claude-code-nix.url = "github:sadjow/claude-code-nix";
+    zen-browser.url = "github:0xc000022070/zen-browser-flake";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -11,7 +12,7 @@
     };
   };
 
-  outputs = { nixpkgs, home-manager, claude-code-nix, ... }:
+  outputs = { nixpkgs, home-manager, claude-code-nix, zen-browser, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -22,7 +23,10 @@
 
 	  modules = [
 	    ./home.nix
-	    { home.packages = [ claude-code-nix.packages.${system}.claude-code ]; }
+	    { home.packages = [
+	        claude-code-nix.packages.${system}.claude-code
+	        zen-browser.packages.${system}.default
+	      ]; }
 	  ];
 	};
       };
