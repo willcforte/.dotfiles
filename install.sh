@@ -21,14 +21,6 @@ sudo apt-get install -y ca-certificates curl wget gnupg software-properties-comm
 echo "==> Adding third-party apt repos"
 sudo install -d -m 0755 /etc/apt/keyrings
 
-# GitHub CLI
-curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-  | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null
-sudo chmod a+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] \
-https://cli.github.com/packages stable main" \
-  | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
-
 # Tailscale
 codename="$(. /etc/os-release && echo "$VERSION_CODENAME")"
 curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.noarmor.gpg" \
@@ -36,16 +28,7 @@ curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.noarmor.gpg" \
 curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.tailscale-keyring.list" \
   | sudo tee /etc/apt/sources.list.d/tailscale.list >/dev/null
 
-# VS Code
-curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
-  | gpg --dearmor \
-  | sudo tee /etc/apt/keyrings/packages.microsoft.gpg >/dev/null
-sudo chmod a+r /etc/apt/keyrings/packages.microsoft.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/packages.microsoft.gpg] \
-https://packages.microsoft.com/repos/code stable main" \
-  | sudo tee /etc/apt/sources.list.d/vscode.list >/dev/null
-
-# Node.js LTS (for Claude Code)
+# Node.js LTS
 curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 
 sudo apt-get update
@@ -78,39 +61,35 @@ while IFS= read -r line; do
 done < packages/flatpak.txt
 
 #-----------------------------------------------------------
-# 6. GitHub CLI auth (interactive — requires a browser)
-#-----------------------------------------------------------
-if ! gh auth status >/dev/null 2>&1; then
-  echo "==> Authenticating with GitHub"
-  gh auth login
-fi
-gh auth setup-git
-
-#-----------------------------------------------------------
-# 7. uv (Astral Python toolchain)
+# 6. uv (Astral Python toolchain)
 #-----------------------------------------------------------
 echo "==> Installing uv"
 curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 
 #-----------------------------------------------------------
-# 8. Starship prompt
+# 7. Starship prompt
 #-----------------------------------------------------------
 echo "==> Installing Starship"
 curl -sS https://starship.rs/install.sh | sh -s -- --yes
 
 #-----------------------------------------------------------
-# 9. Rust (via rustup) and cargo CLI tools
+# 8. Rust (via rustup) and cargo CLI tools
 #-----------------------------------------------------------
-echo "==> Installing Rust"
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+# Guard: the rustup.rs installer aborts if rustup is already present
+# (e.g. installed via apt).
+if ! command -v rustup >/dev/null 2>&1 && [ ! -x "$HOME/.cargo/bin/rustup" ]; then
+  echo "==> Installing Rust"
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+fi
 export PATH="$HOME/.cargo/bin:$PATH"
 
 echo "==> Installing cargo tools"
-cargo install bat du-dust fd-find ripgrep_all procs zoxide
+# ripgrep is required: rga (ripgrep_all) shells out to rg at runtime.
+cargo install bat du-dust fd-find ripgrep ripgrep_all procs zoxide
 
 #-----------------------------------------------------------
-# 10. IosevkaTerm SS18 font (official Iosevka build, latest release)
+# 9. IosevkaTerm SS18 font (official Iosevka build, latest release)
 #-----------------------------------------------------------
 echo "==> Installing IosevkaTerm SS18"
 FONT_DIR="$HOME/.local/share/fonts"
@@ -127,13 +106,24 @@ rm -f "$tmp_zip"
 fc-cache -f "$FONT_DIR"
 
 #-----------------------------------------------------------
-# 11. Claude Code
+# 10. Nix (multi-user/daemon install via Determinate Systems
+#     installer — idempotent-ish via guard, enables flakes)
 #-----------------------------------------------------------
-echo "==> Installing Claude Code"
-npm install -g @anthropic-ai/claude-code
+if ! command -v nix >/dev/null 2>&1 \
+   && [ ! -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+  echo "==> Installing Nix"
+  curl -fsSL https://install.determinate.systems/nix | sh -s -- install --no-confirm
+fi
+# Make nix available in this shell.
+if [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+  # nix-daemon.sh references unset vars; relax nounset while sourcing.
+  set +u
+  . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+  set -u
+fi
 
 #-----------------------------------------------------------
-# 12. ~/.bashrc additions (guards necessary — appends are not idempotent)
+# 11. ~/.bashrc additions (guards necessary — appends are not idempotent)
 #-----------------------------------------------------------
 if ! grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc"; then
   printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
@@ -144,9 +134,12 @@ fi
 if ! grep -qF 'starship init bash' "$HOME/.bashrc"; then
   printf '\neval "$(starship init bash)"\n' >> "$HOME/.bashrc"
 fi
+if ! grep -qF 'nix-daemon.sh' "$HOME/.bashrc"; then
+  printf '\n[ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ] && . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh\n' >> "$HOME/.bashrc"
+fi
 
 #-----------------------------------------------------------
-# 13. Stow dotfiles (symlink each package under stow/ into $HOME)
+# 12. Stow dotfiles (symlink each package under stow/ into $HOME)
 #-----------------------------------------------------------
 echo "==> Stowing dotfiles"
 mkdir -p "$HOME/.claude" "$HOME/.local/bin"
@@ -176,7 +169,26 @@ for pkg in "$DOTFILES"/stow/*/; do
 done
 
 #-----------------------------------------------------------
-# 14. GNOME settings (dconf import — idempotent)
+# 13. home-manager (CLI packages: neovim, tmux, btop, gh, tree,
+#     lazygit, lazydocker, claude-code, zen-browser — see home.nix)
+#-----------------------------------------------------------
+echo "==> Applying home-manager configuration"
+nix run home-manager/master -- switch \
+  --flake "$DOTFILES/stow/nix/.config/home-manager"
+export PATH="$HOME/.nix-profile/bin:$PATH"
+
+#-----------------------------------------------------------
+# 14. GitHub CLI auth (interactive — requires a browser).
+#     gh comes from home-manager; credential helper is configured
+#     in the stowed .gitconfig, so no `gh auth setup-git` needed.
+#-----------------------------------------------------------
+if ! gh auth status >/dev/null 2>&1; then
+  echo "==> Authenticating with GitHub"
+  gh auth login
+fi
+
+#-----------------------------------------------------------
+# 15. GNOME settings (dconf import — idempotent)
 #-----------------------------------------------------------
 echo "==> Importing GNOME settings"
 if command -v dconf >/dev/null 2>&1; then
