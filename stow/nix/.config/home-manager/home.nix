@@ -22,18 +22,21 @@
 
   programs.git = {
     enable = true;
-    userName = "Will C. Forte";
-    userEmail = "willcforte@gmail.com";
+    settings = {
+      user = {
+        name = "Will C. Forte";
+        email = "willcforte@gmail.com";
+      };
+      credential."https://github.com" = {
+        helper = "!${pkgs.gh}/bin/gh auth git-credential";
+      };
+    };
   };
 
   programs.gh = {
     enable = true;
     gitCredentialHelper = {
-      enable = true;
-    };
-    settings = {
-      git_protocol = "https";
-      prompt = "enabled";
+      enable = false;
     };
   };
 
