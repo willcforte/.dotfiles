@@ -146,17 +146,4 @@ echo "==> Installing AppArmor profile for zen-beta"
 sudo install -m 0644 "$DOTFILES/apparmor/zen-beta" /etc/apparmor.d/zen-beta
 sudo apparmor_parser -r /etc/apparmor.d/zen-beta
 
-#-----------------------------------------------------------
-# 12. GNOME settings (dconf import — idempotent)
-#-----------------------------------------------------------
-echo "==> Importing GNOME settings"
-if command -v dconf >/dev/null 2>&1; then
-  dconf load /org/gnome/terminal/         < "$DOTFILES/gnome/terminal.dconf"
-  dconf load /org/gnome/desktop/interface/ < "$DOTFILES/gnome/desktop.dconf"
-  dconf load /org/gnome/shell/extensions/ < "$DOTFILES/gnome/extensions.dconf"
-  echo "    imported terminal, desktop, and extension settings"
-else
-  echo "    dconf not found; skipping GNOME settings"
-fi
-
 echo "==> Done. Open a new shell to pick up PATH changes."
