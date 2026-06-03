@@ -20,6 +20,8 @@ packages/from-source/persona_rl.sh
 **/.claude/cache/
 **/.claude/daemon/
 **/.claude/daemon.log
+**/.claude/daemon-auth-cooldown
+**/.claude/daemon-auth-status.json
 **/.claude/cron.log
 **/.claude/downloads/
 **/.claude/file-history/

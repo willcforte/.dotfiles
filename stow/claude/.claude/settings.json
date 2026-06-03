@@ -80,5 +80,7 @@
     ]
   },
   "model": "opus[1m]",
-  "effortLevel": "high"
+  "effortLevel": "high",
+  "theme": "dark",
+  "skipAutoPermissionPrompt": false
 }
