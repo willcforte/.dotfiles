@@ -110,13 +110,20 @@ echo "==> Installing cargo tools"
 cargo install bat du-dust fd-find ripgrep_all procs zoxide
 
 #-----------------------------------------------------------
-# 10. Iosevka Nerd Font
+# 10. IosevkaTerm SS18 font (official Iosevka build, latest release)
 #-----------------------------------------------------------
-echo "==> Installing Iosevka Nerd Font"
+echo "==> Installing IosevkaTerm SS18"
 FONT_DIR="$HOME/.local/share/fonts"
 mkdir -p "$FONT_DIR"
-curl -fsSL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Iosevka.tar.xz \
-  | tar -xJ -C "$FONT_DIR"
+# Asset names embed the version (e.g. PkgTTF-IosevkaTermSS18-34.6.1.zip), so
+# resolve the latest hinted TTF package URL via the releases API.
+font_url="$(curl -fsSL https://api.github.com/repos/be5invis/Iosevka/releases/latest \
+  | grep -oE 'https://[^"]*PkgTTF-IosevkaTermSS18-[0-9.]+\.zip' \
+  | head -1)"
+tmp_zip="$(mktemp --suffix=.zip)"
+curl -fsSL "$font_url" -o "$tmp_zip"
+unzip -o -q "$tmp_zip" -d "$FONT_DIR"
+rm -f "$tmp_zip"
 fc-cache -f "$FONT_DIR"
 
 #-----------------------------------------------------------
