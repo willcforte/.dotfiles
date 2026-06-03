@@ -1,24 +1,43 @@
 #!/usr/bin/env bash
-# Run this after changing GNOME settings to update the dotfiles snapshots.
+# Run this after changing GNOME settings in the GUI to regenerate the
+# home-manager dconf modules (stow/nix/.config/home-manager/gnome/*.nix).
+# Apply them with `home-manager switch`; commit the .nix files to save them.
 set -euo pipefail
 
 DOTFILES="$(git -C "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" rev-parse --show-toplevel)"
+OUT="$DOTFILES/stow/nix/.config/home-manager/gnome"
+d2n() { nix run nixpkgs#dconf2nix -- "$@"; }
+
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
 
 # Terminal: include profile list/default keys even if at dconf defaults,
-# so `dconf load` on a fresh machine points to the right profile UUID.
+# so a fresh machine points to the right profile UUID.
 {
   dconf dump /org/gnome/terminal/
-  # Ensure profiles list/default pointer are present; dconf dump omits them if
-  # they haven't been explicitly written (Ubuntu leaves them at GSettings default).
-  if ! dconf dump /org/gnome/terminal/ | grep -q '\[legacy/profiles:/\]'; then
+  # dconf dump omits the profiles list/default pointer if it has never been
+  # explicitly written (Ubuntu leaves it at the GSettings default).
+  # The group may dump as [legacy/profiles:/] or [legacy/profiles:] depending
+  # on how the keys were written (dconf load vs home-manager).
+  if ! dconf dump /org/gnome/terminal/ | grep -qE '^\[legacy/profiles:/?\]'; then
     PROFILE_UUID=$(dconf list /org/gnome/terminal/legacy/profiles:/ \
       | grep -oE '[0-9a-f-]{36}' | head -1)
     printf '\n[legacy/profiles:/]\ndefault=%s\nlist=[%s]\n' \
       "'$PROFILE_UUID'" "'$PROFILE_UUID'"
   fi
-} > "$DOTFILES/gnome/terminal.dconf"
-dconf dump /org/gnome/desktop/interface/ > "$DOTFILES/gnome/desktop.dconf"
-dconf dump /org/gnome/shell/extensions/ > "$DOTFILES/gnome/extensions.dconf"
+} > "$tmp/terminal.dconf"
+dconf dump /org/gnome/desktop/interface/ > "$tmp/desktop.dconf"
+# overridden-settings is tiling-assistant runtime state with GVariant
+# maybe-types that dconf2nix (and declarative management) can't handle.
+dconf dump /org/gnome/shell/extensions/ \
+  | grep -v '^overridden-settings=' > "$tmp/extensions.dconf"
 
-echo "Exported GNOME settings to $DOTFILES/gnome/"
-echo "Commit the .dconf files to save them."
+d2n -i "$tmp/terminal.dconf"   -o "$OUT/terminal.nix"   --root org/gnome/terminal
+# dconf2nix emits the profiles group with a trailing slash, which the
+# home-manager dconf module rejects (would form a '//' path).
+sed -i 's|legacy/profiles:/" =|legacy/profiles:" =|' "$OUT/terminal.nix"
+d2n -i "$tmp/desktop.dconf"    -o "$OUT/desktop.nix"    --root org/gnome/desktop/interface
+d2n -i "$tmp/extensions.dconf" -o "$OUT/extensions.nix" --root org/gnome/shell/extensions
+
+echo "Regenerated $OUT/{terminal,desktop,extensions}.nix"
+echo "Apply with: home-manager switch; commit the .nix files to save them."
