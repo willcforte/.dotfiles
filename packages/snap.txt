@@ -1,2 +1,2 @@
 # One snap per line. Append flags after the name (e.g. "--classic").
-lazygit
+code --classic
