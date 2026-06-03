@@ -1,3 +1,0 @@
-# Flatpak app IDs, installed from flathub.
-com.slack.Slack
-md.obsidian.Obsidian

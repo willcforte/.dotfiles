@@ -45,6 +45,13 @@
 
     # Terminal font
     (iosevka-bin.override { variant = "SGr-IosevkaTermSS18"; })
+
+    # GUI apps (formerly flatpak/snap). Ubuntu 24.04 blocks the
+    # unprivileged user namespaces their sandboxes need — install.sh
+    # ships AppArmor profiles (apparmor/) granting userns per app.
+    obsidian
+    slack
+    vscode
   ];
 
   # Make fontconfig see fonts from home.packages on non-NixOS.
