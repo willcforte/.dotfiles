@@ -28,9 +28,6 @@ curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.noarmor.gpg" \
 curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.tailscale-keyring.list" \
   | sudo tee /etc/apt/sources.list.d/tailscale.list >/dev/null
 
-# Node.js LTS
-curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-
 sudo apt-get update
 
 #-----------------------------------------------------------
@@ -61,20 +58,9 @@ while IFS= read -r line; do
 done < packages/flatpak.txt
 
 #-----------------------------------------------------------
-# 6. uv (Astral Python toolchain)
-#-----------------------------------------------------------
-echo "==> Installing uv"
-curl -LsSf https://astral.sh/uv/install.sh | sh
-export PATH="$HOME/.local/bin:$PATH"
-
-#-----------------------------------------------------------
-# 7. Starship prompt
-#-----------------------------------------------------------
-echo "==> Installing Starship"
-curl -sS https://starship.rs/install.sh | sh -s -- --yes
-
-#-----------------------------------------------------------
-# 8. Rust (via rustup) and cargo CLI tools
+# 6. Rust toolchain (via rustup) — for Rust development only;
+#    Rust-built CLI tools (bat, fd, ripgrep, ...) come from
+#    home-manager (see home.nix).
 #-----------------------------------------------------------
 # Guard: the rustup.rs installer aborts if rustup is already present
 # (e.g. installed via apt).
@@ -82,31 +68,9 @@ if ! command -v rustup >/dev/null 2>&1 && [ ! -x "$HOME/.cargo/bin/rustup" ]; th
   echo "==> Installing Rust"
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
 fi
-export PATH="$HOME/.cargo/bin:$PATH"
-
-echo "==> Installing cargo tools"
-# ripgrep is required: rga (ripgrep_all) shells out to rg at runtime.
-cargo install bat du-dust fd-find ripgrep ripgrep_all procs zoxide
 
 #-----------------------------------------------------------
-# 9. IosevkaTerm SS18 font (official Iosevka build, latest release)
-#-----------------------------------------------------------
-echo "==> Installing IosevkaTerm SS18"
-FONT_DIR="$HOME/.local/share/fonts"
-mkdir -p "$FONT_DIR"
-# Asset names embed the version (e.g. PkgTTF-IosevkaTermSS18-34.6.1.zip), so
-# resolve the latest hinted TTF package URL via the releases API.
-font_url="$(curl -fsSL https://api.github.com/repos/be5invis/Iosevka/releases/latest \
-  | grep -oE 'https://[^"]*PkgTTF-IosevkaTermSS18-[0-9.]+\.zip' \
-  | head -1)"
-tmp_zip="$(mktemp --suffix=.zip)"
-curl -fsSL "$font_url" -o "$tmp_zip"
-unzip -o -q "$tmp_zip" -d "$FONT_DIR"
-rm -f "$tmp_zip"
-fc-cache -f "$FONT_DIR"
-
-#-----------------------------------------------------------
-# 10. Nix (multi-user/daemon install via Determinate Systems
+# 7. Nix (multi-user/daemon install via Determinate Systems
 #     installer — idempotent-ish via guard, enables flakes)
 #-----------------------------------------------------------
 if ! command -v nix >/dev/null 2>&1 \
@@ -123,7 +87,7 @@ if [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
 fi
 
 #-----------------------------------------------------------
-# 11. ~/.bashrc additions (guards necessary — appends are not idempotent)
+# 8. ~/.bashrc additions (guards necessary — appends are not idempotent)
 #-----------------------------------------------------------
 if ! grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc"; then
   printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
@@ -139,7 +103,7 @@ if ! grep -qF 'nix-daemon.sh' "$HOME/.bashrc"; then
 fi
 
 #-----------------------------------------------------------
-# 12. Stow dotfiles (symlink each package under stow/ into $HOME)
+# 9. Stow dotfiles (symlink each package under stow/ into $HOME)
 #-----------------------------------------------------------
 echo "==> Stowing dotfiles"
 mkdir -p "$HOME/.claude" "$HOME/.local/bin"
@@ -169,7 +133,7 @@ for pkg in "$DOTFILES"/stow/*/; do
 done
 
 #-----------------------------------------------------------
-# 13. home-manager (CLI packages: neovim, tmux, btop, gh, tree,
+# 10. home-manager (CLI packages: neovim, tmux, btop, gh, tree,
 #     lazygit, lazydocker, claude-code, zen-browser — see home.nix)
 #-----------------------------------------------------------
 echo "==> Applying home-manager configuration"
@@ -178,7 +142,7 @@ nix run home-manager/release-25.05 -- switch \
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
 #-----------------------------------------------------------
-# 14. GitHub CLI auth (interactive — requires a browser).
+# 11. GitHub CLI auth (interactive — requires a browser).
 #     gh comes from home-manager; credential helper is configured
 #     in the stowed .gitconfig, so no `gh auth setup-git` needed.
 #-----------------------------------------------------------
@@ -188,7 +152,7 @@ if ! gh auth status >/dev/null 2>&1; then
 fi
 
 #-----------------------------------------------------------
-# 15. AppArmor: allow user namespaces for nix zen-beta
+# 12. AppArmor: allow user namespaces for nix zen-beta
 #     (Ubuntu 24.04 blocks unprivileged userns; Firefox-based
 #     browsers need it for their content-process sandbox)
 #-----------------------------------------------------------
@@ -197,7 +161,7 @@ sudo install -m 0644 "$DOTFILES/apparmor/zen-beta" /etc/apparmor.d/zen-beta
 sudo apparmor_parser -r /etc/apparmor.d/zen-beta
 
 #-----------------------------------------------------------
-# 16. GNOME settings (dconf import — idempotent)
+# 13. GNOME settings (dconf import — idempotent)
 #-----------------------------------------------------------
 echo "==> Importing GNOME settings"
 if command -v dconf >/dev/null 2>&1; then

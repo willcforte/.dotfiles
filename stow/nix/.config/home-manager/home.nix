@@ -16,7 +16,33 @@
     tree
     lazygit
     lazydocker
+
+    # Rust-built CLI tools (formerly `cargo install`; rustup itself stays
+    # in install.sh for actual Rust development)
+    bat
+    du-dust
+    fd
+    ripgrep
+    ripgrep-all
+    procs
+    zoxide
+
+    # Formerly curl-pipe-sh installers in install.sh
+    starship
+    uv
+
+    # Terminal emulator — config is stowed (.wezterm.lua)
+    wezterm
+
+    # Node.js LTS (formerly NodeSource apt repo)
+    nodejs
+
+    # Terminal font
+    (iosevka-bin.override { variant = "SGr-IosevkaTermSS18"; })
   ];
+
+  # Make fontconfig see fonts from home.packages on non-NixOS.
+  fonts.fontconfig.enable = true;
 
   # Non-NixOS (Ubuntu) integration: adds ~/.nix-profile/share to
   # XDG_DATA_DIRS (via environment.d) so GNOME finds desktop entries
