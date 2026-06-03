@@ -188,7 +188,16 @@ if ! gh auth status >/dev/null 2>&1; then
 fi
 
 #-----------------------------------------------------------
-# 15. GNOME settings (dconf import — idempotent)
+# 15. AppArmor: allow user namespaces for nix zen-beta
+#     (Ubuntu 24.04 blocks unprivileged userns; Firefox-based
+#     browsers need it for their content-process sandbox)
+#-----------------------------------------------------------
+echo "==> Installing AppArmor profile for zen-beta"
+sudo install -m 0644 "$DOTFILES/apparmor/zen-beta" /etc/apparmor.d/zen-beta
+sudo apparmor_parser -r /etc/apparmor.d/zen-beta
+
+#-----------------------------------------------------------
+# 16. GNOME settings (dconf import — idempotent)
 #-----------------------------------------------------------
 echo "==> Importing GNOME settings"
 if command -v dconf >/dev/null 2>&1; then
