@@ -1,10 +1,6 @@
 local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 
--- Nix-built wezterm on non-NixOS can't reach the system GPU drivers (libEGL
--- fails to load), so fall back to software rendering. Fine for a terminal.
-config.front_end = 'Software'
-
 config.color_scheme = 'GruvboxDark'
 config.font = wezterm.font 'Iosevka Term SS18'
 config.font_size = 18
