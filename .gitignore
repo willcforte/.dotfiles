@@ -1,34 +1,14 @@
-**/.claude/memory/
-**/.claude/plans/
-**/.claude/commands/
-**/.claude/CLAUDE.md
-packages/from-source/persona_rl.sh
+# This is a PUBLIC repo. Never commit PII or company info.
 
-**/.claude/settings.local.json
-**/.claude/.credentials.json
-**/.claude/projects/
-**/.claude/todos/
-**/.claude/statsig/
-**/.claude/shell-snapshots/
-**/.claude/ide/
-**/.claude/history.jsonl
-**/.claude/policy-limits.json
-**/.claude/remote-settings.json
-**/.claude/backups/
-**/.claude/cache/
-**/.claude/daemon/
-**/.claude/daemon.log
-**/.claude/daemon-auth-cooldown
-**/.claude/daemon-auth-status.json
-**/.claude/cron.log
-**/.claude/downloads/
-**/.claude/file-history/
-**/.claude/jobs/
-**/.claude/paste-cache/
-**/.claude/plugins/
-**/.claude/sessions/
-**/.claude/session-env/
-**/.claude/tasks/
-**/.claude/.last-cleanup
-**/.claude/.last-update-result.json
-**/.claude/mcp-needs-auth-cache.json
+# Private Claude Code data lives as real files under ~/.claude (memory,
+# commands, CLAUDE.md, credentials) and is intentionally NOT stored here.
+# Only config/claude/settings.json is tracked. These globs are defense-in-depth
+# in case any private Claude data ever lands in the working tree.
+**/.claude/
+**/.credentials.json
+config/claude/memory/
+config/claude/commands/
+config/claude/CLAUDE.md
+
+# Persona company build script (never publish)
+packages/from-source/persona_rl.sh
