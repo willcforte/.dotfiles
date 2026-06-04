@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, nixgl, ... }:
 let
   # All config files live in this repo. mkOutOfStoreSymlink points a
   # home.file symlink back at the working tree, so edits take effect
@@ -43,8 +43,9 @@ in {
     # Formerly a curl-pipe-sh installer in install.sh
     uv
 
-    # Terminal emulator — config in config/wezterm/.wezterm.lua
-    wezterm
+    # Terminal emulator — config in config/wezterm/.wezterm.lua. nixGL-wrapped
+    # for real OpenGL (see the nixGL block below).
+    (config.lib.nixGL.wrap wezterm)
 
     # Node.js LTS (formerly NodeSource apt repo)
     nodejs
@@ -52,13 +53,22 @@ in {
     # Terminal font
     (iosevka-bin.override { variant = "SGr-IosevkaTermSS18"; })
 
-    # GUI apps (formerly flatpak/snap). Ubuntu 24.04 blocks the
-    # unprivileged user namespaces their sandboxes need — install.sh
-    # ships AppArmor profiles (apparmor/) granting userns per app.
-    obsidian
-    slack
-    vscode
+    # GUI apps (formerly flatpak/snap). nixGL-wrapped so they get OpenGL on
+    # non-NixOS; the wrapper also rewrites their .desktop files, so GNOME
+    # launches the wrapped binaries too. Ubuntu 24.04 blocks the unprivileged
+    # user namespaces their sandboxes need — install.sh ships AppArmor
+    # profiles (apparmor/) granting userns per app.
+    (config.lib.nixGL.wrap obsidian)
+    (config.lib.nixGL.wrap slack)
+    (config.lib.nixGL.wrap vscode)
   ];
+
+  # Bridge OpenGL for the Nix GUI apps above. Non-NixOS has no
+  # /run/opengl-driver/lib, so unwrapped Nix GUI apps die on libEGL; nixGL
+  # injects a working GL/Mesa. "mesa" is the Intel/Mesa wrapper (this host is
+  # Intel) — switch the default wrapper on hosts with other GPUs.
+  nixGL.packages = nixgl.packages;
+  nixGL.defaultWrapper = "mesa";
 
   # Dotfiles formerly symlinked by GNU Stow, now owned by home-manager.
   # Frequently-edited configs use liveLink (mkOutOfStoreSymlink) so repo
