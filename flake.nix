@@ -6,13 +6,18 @@
     claude-code-nix.url = "github:sadjow/claude-code-nix";
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
 
+    # nixGL bridges OpenGL for Nix GUI apps on non-NixOS (Ubuntu has no
+    # /run/opengl-driver/lib, so the apps crash on libEGL). Uses its own
+    # nixpkgs for a known-good Mesa, matching the build confirmed working.
+    nixgl.url = "github:nix-community/nixGL";
+
     home-manager = {
       url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { nixpkgs, home-manager, claude-code-nix, zen-browser, ... }:
+  outputs = { nixpkgs, home-manager, claude-code-nix, zen-browser, nixgl, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
@@ -30,6 +35,8 @@
       # falling back to plain "will" on hosts without their own module.
       mkHome = modules: home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
+        # nixgl is consumed by home.nix (nixGL.packages) to wrap GUI apps.
+        extraSpecialArgs = { inherit nixgl; };
         modules = [ ./home.nix flakePkgs ] ++ modules;
       };
     in {
