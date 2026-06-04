@@ -25,9 +25,12 @@
         config.allowUnfree = true; # obsidian, slack, vscode
       };
 
-      flakePkgs = { home.packages = [
+      # A module (takes config) so zen-browser can be nixGL-wrapped like the
+      # other GUI apps — non-NixOS has no system GL, so the unwrapped browser
+      # hits the same libEGL crash. claude-code is a CLI; left unwrapped.
+      flakePkgs = { config, ... }: { home.packages = [
         claude-code-nix.packages.${system}.claude-code
-        zen-browser.packages.${system}.default
+        (config.lib.nixGL.wrap zen-browser.packages.${system}.default)
       ]; };
 
       # Base config plus optional host-specific modules.
