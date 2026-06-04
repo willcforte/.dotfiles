@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # Run this after changing GNOME settings in the GUI to regenerate the
-# home-manager dconf modules (stow/nix/.config/home-manager/gnome/*.nix).
+# home-manager dconf modules (modules/gnome/*.nix).
 # Apply them with `home-manager switch`; commit the .nix files to save them.
 set -euo pipefail
 
-DOTFILES="$(git -C "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" rev-parse --show-toplevel)"
-OUT="$DOTFILES/stow/nix/.config/home-manager/gnome"
+# Installed into ~/.local/bin via home.file (a /nix/store path), so it can't
+# locate the repo by walking up from itself — the dotfiles repo is at ~/.dotfiles.
+DOTFILES="$HOME/.dotfiles"
+OUT="$DOTFILES/modules/gnome"
 d2n() { nix run nixpkgs#dconf2nix -- "$@"; }
 
 tmp="$(mktemp -d)"

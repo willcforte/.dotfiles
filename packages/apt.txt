@@ -1,5 +1,5 @@
 # neovim, tmux, btop, gh, tree, lazygit, lazydocker are managed by
-# home-manager — see stow/nix/.config/home-manager/home.nix
+# home-manager — see home.nix
 
 # Git (bootstrap — needed before nix/home-manager exist)
 git
@@ -9,7 +9,6 @@ git-lfs
 build-essential
 
 # Dev / shell utilities
-stow
 flameshot
 cron
 tldr

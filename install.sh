@@ -66,44 +66,27 @@ if [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
 fi
 
 #-----------------------------------------------------------
-# 6. Stow dotfiles (symlink each package under stow/ into $HOME)
+# 6. Enable nix flakes for the user. home-manager is invoked as a flake
+#    below, so this must be set before the first switch. The Determinate
+#    installer enables it system-wide; the user nix.conf makes bootstrap
+#    robust on any nix install.
 #-----------------------------------------------------------
-echo "==> Stowing dotfiles"
-mkdir -p "$HOME/.claude" "$HOME/.local/bin"
-for pkg in "$DOTFILES"/stow/*/; do
-  pkg_name="$(basename "$pkg")"
-  while IFS= read -r src; do
-    rel="${src#${pkg}}"
-    tgt="$HOME/$rel"
-    # Skip if the target resolves to a path inside the stow package (directory
-    # folding — stow already manages this via a parent directory symlink).
-    real_tgt="$(realpath "$tgt" 2>/dev/null || true)"
-    if [[ "$real_tgt" == "$DOTFILES"/stow/* ]]; then
-      continue
-    fi
-    if [ -L "$tgt" ]; then
-      rm "$tgt"
-    elif [ -f "$tgt" ]; then
-      if diff -q "$src" "$tgt" >/dev/null 2>&1; then
-        echo "    replacing identical real file with symlink: $tgt"
-        rm "$tgt"
-      else
-        echo "    WARNING: $tgt differs from dotfiles source — leaving it"
-      fi
-    fi
-  done < <(find "$pkg" -type f)
-  stow --dir="$DOTFILES/stow" --target="$HOME" "$pkg_name"
-done
+echo "==> Enabling nix flakes for user"
+mkdir -p "$HOME/.config/nix"
+if ! grep -qs 'experimental-features.*flakes' "$HOME/.config/nix/nix.conf"; then
+  echo "experimental-features = nix-command flakes" >> "$HOME/.config/nix/nix.conf"
+fi
 
 #-----------------------------------------------------------
-# 7. home-manager (packages + bash/starship/zoxide shell config —
-#    see home.nix). -b backup moves aside pre-existing real files
-#    that home-manager needs to own (e.g. Ubuntu's stock ~/.bashrc
-#    and ~/.profile on first run → ~/.bashrc.backup).
+# 7. home-manager owns all of $HOME's config declaratively (packages,
+#    bash/starship/zoxide, git, and the dotfiles formerly managed by GNU
+#    Stow — see home.nix / home.file). It auto-selects "will@<hostname>"
+#    when a matching module exists, else "will". -b backup moves aside any
+#    pre-existing real files it needs to own (Ubuntu's stock ~/.bashrc and
+#    ~/.profile, plus ~/.gitconfig etc. on a machine migrating from stow).
 #-----------------------------------------------------------
 echo "==> Applying home-manager configuration"
-nix run home-manager/release-25.05 -- switch -b backup \
-  --flake "$DOTFILES/stow/nix/.config/home-manager"
+nix run home-manager/release-25.05 -- switch -b backup --flake "$DOTFILES"
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
 #-----------------------------------------------------------
