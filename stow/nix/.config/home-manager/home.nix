@@ -17,6 +17,7 @@
   # home-manager would generate. Keep config out of here.
   home.packages = with pkgs; [
     git
+    stow
     gh
     neovim
     tmux
