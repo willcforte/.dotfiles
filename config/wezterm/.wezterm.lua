@@ -31,4 +31,7 @@ config.colors = {
   visual_bell = '#504945', -- gruvbox bg2: visible flash against the dark bg
 }
 
+-- Temporary fix for title bar not showing on Wayland
+config.enable_wayland = false
+
 return config
