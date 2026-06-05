@@ -2,27 +2,32 @@
   description = "Will's Nix config for Ubuntu 24 LTS dev.";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     claude-code-nix.url = "github:sadjow/claude-code-nix";
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
 
-    # nixGL bridges OpenGL for Nix GUI apps on non-NixOS (Ubuntu has no
-    # /run/opengl-driver/lib, so the apps crash on libEGL). Uses its own
-    # nixpkgs for a known-good Mesa, matching the build confirmed working.
     nixgl.url = "github:nix-community/nixGL";
 
+    # Declarative system-level config (/etc, systemd) on non-NixOS.
+    # system-manager tracks nixos-unstable; safe to share our nixpkgs now
+    # that we're on unstable too (its userborn module needs unstable).
+    system-manager = {
+      url = "github:numtide/system-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
+      url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { nixpkgs, home-manager, claude-code-nix, zen-browser, nixgl, ... }:
+  outputs = { nixpkgs, home-manager, claude-code-nix, zen-browser, nixgl, system-manager, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         inherit system;
-        config.allowUnfree = true; # obsidian, slack, vscode
+        config.allowUnfree = true;
       };
 
       # A module (takes config) so zen-browser can be nixGL-wrapped like the
@@ -47,6 +52,13 @@
         "will" = mkHome [ ];
         "will@will-pc14250" = mkHome [ ./hosts/will-pc14250.nix ];
         "will@persona-0020" = mkHome [ ./hosts/persona-0020.nix ];
+      };
+
+      # System-level config, activated separately from home-manager via
+      # `nix run github:numtide/system-manager -- switch --flake . --sudo`
+      # (wired into the update-config helper).
+      systemConfigs.default = system-manager.lib.makeSystemConfig {
+        modules = [ ./system.nix ];
       };
     };
 }

@@ -20,12 +20,12 @@ in {
     tmux
     btop
     tree
-    lazygit
     lazydocker
+    gearlever
 
     # Rust-built CLI tools
     bat
-    du-dust
+    dust
     fd
     ripgrep
     ripgrep-all
@@ -47,11 +47,10 @@ in {
     (config.lib.nixGL.wrap vscode)
   ];
 
-  # "mesa" is the Intel/Mesa OpenGL wrapper
   nixGL.packages = nixgl.packages;
   nixGL.defaultWrapper = "mesa";
 
-  # Dotfiles formerly symlinked by GNU Stow, now owned by home-manager.
+  # Symlinks to dotfiles
   home.file = {
     ".wezterm.lua".source = liveLink "config/wezterm/.wezterm.lua";
     ".tmux.conf".source = liveLink "config/tmux/.tmux.conf";
