@@ -47,8 +47,8 @@ in {
     (config.lib.nixGL.wrap vscode)
   ];
 
-  nixGL.packages = nixgl.packages;
-  nixGL.defaultWrapper = "mesa";
+  targets.genericLinux.nixGL.packages = nixgl.packages;
+  targets.genericLinux.nixGL.defaultWrapper = "mesa";
 
   # Symlinks to dotfiles
   home.file = {
@@ -75,9 +75,9 @@ in {
 
   programs.git = {
     enable = true;
-    userName = "Will C. Forte";
-    userEmail = "willcforte@gmail.com";
-    extraConfig = {
+    settings = {
+      user.name = "Will C. Forte";
+      user.email = "willcforte@gmail.com";
       push.autoSetupRemote = true;
       # Clear any inherited helper (empty string), then delegate to gh.
       credential."https://github.com".helper = [ "" "!gh auth git-credential" ];
