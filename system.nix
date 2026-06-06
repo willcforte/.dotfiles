@@ -5,6 +5,10 @@
   config = {
     nixpkgs.hostPlatform = "x86_64-linux";
 
+    # System-wide OpenGL via /run/opengl-driver (nix-system-graphics module).
+    # Mesa default covers this Intel/AMD host; replaces per-app nixGL wrapping.
+    system-graphics.enable = true;
+
     # Show asterisks while typing the sudo password.
     # NOTE: sudo ignores any sudoers.d filename containing a ".", so the
     # drop-in must be dot-free. 0440 root:root is required by sudo.
