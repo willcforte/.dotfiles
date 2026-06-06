@@ -20,10 +20,17 @@ in {
     tmux
     btop
     tree
+    lazygit
     lazydocker
     gearlever
     pinta
     solaar
+
+    # CLI tools (migrated from apt)
+    lsd
+    nmap
+    vim
+    tldr
 
     # Rust-built CLI tools
     bat
@@ -43,10 +50,13 @@ in {
     # Terminal font
     (iosevka-bin.override { variant = "SGr-IosevkaTermSS18"; })
 
-    # GUI apps (formerly flatpak/snap). nixGL-wrapped for OpenGL
+    # GUI apps (formerly flatpak/snap/apt). nixGL-wrapped for OpenGL
     (config.lib.nixGL.wrap obsidian)
     (config.lib.nixGL.wrap slack)
     (config.lib.nixGL.wrap vscode)
+    (config.lib.nixGL.wrap vlc)
+    (config.lib.nixGL.wrap peek)
+    (config.lib.nixGL.wrap flameshot)
   ];
 
   targets.genericLinux.nixGL.packages = nixgl.packages;
