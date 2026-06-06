@@ -20,12 +20,12 @@ in {
     tmux
     btop
     tree
-    lazygit
     lazydocker
+    gearlever
 
     # Rust-built CLI tools
     bat
-    du-dust
+    dust
     fd
     ripgrep
     ripgrep-all
@@ -47,11 +47,10 @@ in {
     (config.lib.nixGL.wrap vscode)
   ];
 
-  # "mesa" is the Intel/Mesa OpenGL wrapper
-  nixGL.packages = nixgl.packages;
-  nixGL.defaultWrapper = "mesa";
+  targets.genericLinux.nixGL.packages = nixgl.packages;
+  targets.genericLinux.nixGL.defaultWrapper = "mesa";
 
-  # Dotfiles formerly symlinked by GNU Stow, now owned by home-manager.
+  # Symlinks to dotfiles
   home.file = {
     ".wezterm.lua".source = liveLink "config/wezterm/.wezterm.lua";
     ".tmux.conf".source = liveLink "config/tmux/.tmux.conf";
@@ -76,9 +75,9 @@ in {
 
   programs.git = {
     enable = true;
-    userName = "Will C. Forte";
-    userEmail = "willcforte@gmail.com";
-    extraConfig = {
+    settings = {
+      user.name = "Will C. Forte";
+      user.email = "willcforte@gmail.com";
       push.autoSetupRemote = true;
       # Clear any inherited helper (empty string), then delegate to gh.
       credential."https://github.com".helper = [ "" "!gh auth git-credential" ];
