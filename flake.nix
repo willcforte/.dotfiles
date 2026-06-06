@@ -12,6 +12,13 @@
 
     nixgl.url = "github:nix-community/nixGL";
 
+    # System-wide OpenGL drivers on non-NixOS: populates /run/opengl-driver
+    # via system-manager, so Nix GUI apps need no nixGL wrapping.
+    nix-system-graphics = {
+      url = "github:soupglasses/nix-system-graphics";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Declarative system-level config (/etc, systemd) on non-NixOS.
     # system-manager tracks nixos-unstable; safe to share our nixpkgs now
     # that we're on unstable too (its userborn module needs unstable).
@@ -26,7 +33,7 @@
     };
   };
 
-  outputs = { nixpkgs, home-manager, claude-code-nix, zen-browser, nixgl, system-manager, solaar, ... }:
+  outputs = { nixpkgs, home-manager, claude-code-nix, zen-browser, nixgl, system-manager, solaar, nix-system-graphics, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
@@ -58,7 +65,10 @@
 
       # System-manager config (numtide/system-manager)
       systemConfigs.default = system-manager.lib.makeSystemConfig {
-        modules = [ ./system.nix ];
+        modules = [
+          nix-system-graphics.systemModules.default
+          ./system.nix
+        ];
       };
     };
 }
