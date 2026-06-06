@@ -86,7 +86,7 @@ fi
 #    ~/.profile, plus ~/.gitconfig etc. on a machine migrating from stow).
 #-----------------------------------------------------------
 echo "==> Applying home-manager configuration"
-nix run home-manager/release-25.05 -- switch -b backup --flake "$DOTFILES"
+nix run home-manager/master -- switch -b backup --flake "$DOTFILES"
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
 #-----------------------------------------------------------
