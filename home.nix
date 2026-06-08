@@ -22,6 +22,8 @@ in {
     tree
     lazydocker
     gearlever
+    pinta
+    solaar
 
     # Rust-built CLI tools
     bat
