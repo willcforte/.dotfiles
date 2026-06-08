@@ -1,4 +1,4 @@
-{ config, pkgs, lib, nixgl, ... }:
+{ config, pkgs, lib, ... }:
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
   liveLink = path: config.lib.file.mkOutOfStoreSymlink "${dotfiles}/${path}";
@@ -42,25 +42,23 @@ in {
 
     uv
 
-    # config in config/wezterm/.wezterm.lua. nixGL-wrapped
-    (config.lib.nixGL.wrap wezterm)
+    # config in config/wezterm/.wezterm.lua
+    wezterm
 
     nodejs
 
     # Terminal font
     (iosevka-bin.override { variant = "SGr-IosevkaTermSS18"; })
 
-    # GUI apps (formerly flatpak/snap/apt). nixGL-wrapped for OpenGL
-    (config.lib.nixGL.wrap obsidian)
-    (config.lib.nixGL.wrap slack)
-    (config.lib.nixGL.wrap vscode)
-    (config.lib.nixGL.wrap vlc)
-    (config.lib.nixGL.wrap peek)
-    (config.lib.nixGL.wrap flameshot)
+    # GUI apps (formerly flatpak/snap/apt). GL via /run/opengl-driver
+    # (nix-system-graphics) — no nixGL wrapping needed.
+    obsidian
+    slack
+    vscode
+    vlc
+    peek
+    flameshot
   ];
-
-  targets.genericLinux.nixGL.packages = nixgl.packages;
-  targets.genericLinux.nixGL.defaultWrapper = "mesa";
 
   # Symlinks to dotfiles
   home.file = {
