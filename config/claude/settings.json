@@ -78,7 +78,6 @@
       "Bash(git -C * clone:*)"
     ]
   },
-  "model": "opus[1m]",
   "hooks": {
     "Stop": [
       {
