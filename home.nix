@@ -56,7 +56,6 @@ in {
     slack
     vscode
     vlc
-    peek
     flameshot
   ];
 
