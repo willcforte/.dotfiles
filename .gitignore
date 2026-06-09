@@ -12,3 +12,7 @@ config/claude/CLAUDE.md
 
 # Persona company build script (never publish)
 packages/from-source/persona_rl.sh
+
+# Nix build artifacts (symlinks into /nix/store left by `nix build`/update-config)
+/result
+/result-*
