@@ -17,6 +17,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Full VS Code marketplace (incl. MS-proprietary) as Nix packages, so
+    # extensions are declarative. Provides the vscode-marketplace overlay.
+    nix-vscode-extensions = {
+      url = "github:nix-community/nix-vscode-extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Declarative system-level config (/etc, systemd) on non-NixOS.
     # system-manager tracks nixos-unstable; safe to share our nixpkgs now
     # that we're on unstable too (its userborn module needs unstable).
@@ -31,12 +38,13 @@
     };
   };
 
-  outputs = { nixpkgs, home-manager, claude-code-nix, zen-browser, system-manager, solaar, nix-system-graphics, ... }:
+  outputs = { nixpkgs, home-manager, claude-code-nix, zen-browser, system-manager, solaar, nix-system-graphics, nix-vscode-extensions, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
+        overlays = [ nix-vscode-extensions.overlays.default ];
       };
 
       # Flake-sourced packages. GL drivers come from /run/opengl-driver

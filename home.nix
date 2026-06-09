@@ -54,10 +54,10 @@ in {
     # (nix-system-graphics) — no nixGL wrapping needed.
     obsidian
     slack
-    vscode
     vlc
     flameshot
   ];
+  # vscode is declared via programs.vscode below (extensions + settings).
 
   # Symlinks to dotfiles
   home.file = {
@@ -81,6 +81,59 @@ in {
 
   # so GNOME finds GUI apps & icons
   targets.genericLinux.enable = true;
+
+  # VS Code, fully declarative. Extensions come from the nix-vscode-extensions
+  # marketplace overlay (works because this is the official MS build on FHS
+  # Ubuntu). userSettings makes settings.json a read-only store symlink — edit
+  # settings here, not in the GUI; keep VS Code Settings Sync disabled.
+  programs.vscode = {
+    enable = true;
+    # Immutable extensions dir: exactly the declared set, no GUI installs.
+    # Flip to true if you want to install extensions ad-hoc in the GUI again.
+    mutableExtensionsDir = false;
+    profiles.default = {
+      extensions = with pkgs.vscode-marketplace; [
+        anthropic.claude-code
+        charliermarsh.ruff
+        davidanson.vscode-markdownlint
+        jdinhlife.gruvbox
+        leanprover.lean4
+        ms-azuretools.vscode-containers
+        ms-python.debugpy
+        ms-python.python
+        ms-python.vscode-pylance
+        ms-python.vscode-python-envs
+        ms-vscode-remote.remote-containers
+        ms-vscode-remote.remote-ssh
+        ms-vscode-remote.remote-ssh-edit
+        ms-vscode-remote.remote-wsl
+        ms-vscode-remote.vscode-remote-extensionpack
+        ms-vscode.cmake-tools
+        ms-vscode.cpp-devtools
+        ms-vscode.cpptools
+        ms-vscode.cpptools-extension-pack
+        ms-vscode.cpptools-themes
+        ms-vscode.remote-explorer
+        ms-vscode.remote-server
+        oijaz.unicode-latex
+        rust-lang.rust-analyzer
+        tamasfe.even-better-toml
+        tomoki1207.pdf
+      ];
+      userSettings = {
+        "editor.fontSize" = 18;
+        "editor.fontFamily" = "'Iosevka Nerd Font', monospace";
+        "workbench.colorTheme" = "Gruvbox Dark Hard";
+        "workbench.startupEditor" = "none";
+        "editor.codeActionsOnSave" = [ "source.organizeImports" ];
+        "editor.formatOnSave" = true;
+        "rust-analyzer.imports.granularity.group" = "module";
+        "claudeCode.useTerminal" = true;
+        "workbench.secondarySideBar.defaultVisibility" = "hidden";
+        "terminal.integrated.fontSize" = 18;
+      };
+    };
+  };
 
   programs.git = {
     enable = true;
