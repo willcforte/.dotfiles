@@ -6,7 +6,6 @@
       "Write",
       "Glob",
       "Grep",
-      "Bash",
       "Monitor",
       "LSP",
       "Skill(update-config:*)",
@@ -58,7 +57,13 @@
       "Bash(git -C * apply:*)",
       "Bash(gh pr list *)",
       "Bash(gh pr status *)",
-      "Bash(tailscale status *)"
+      "Bash(tailscale status *)",
+      "Bash(dconf dump *)",
+      "Bash(dconf list *)",
+      "Bash(dconf read *)",
+      "Bash(nix path-info *)",
+      "Bash(nix build *)",
+      "Bash(chmod +x *)"
     ],
     "deny": [
       "Bash(git push --force:*)",
@@ -105,5 +110,6 @@
   "effortLevel": "high",
   "theme": "dark",
   "preferredNotifChannel": "terminal_bell",
-  "skipAutoPermissionPrompt": false
+  "skipAutoPermissionPrompt": false,
+  "model": "opus[1m]"
 }
