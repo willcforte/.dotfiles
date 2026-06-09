@@ -1,6 +1,3 @@
-# neovim, tmux, btop, gh, tree, lazygit, lazydocker, lsd, nmap, vim,
-# tldr, flameshot are managed by home-manager — see home.nix
-
 # Git (bootstrap — needed before nix/home-manager exist)
 git
 git-lfs
