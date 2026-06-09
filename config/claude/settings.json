@@ -63,7 +63,9 @@
       "Bash(dconf read *)",
       "Bash(nix path-info *)",
       "Bash(nix build *)",
-      "Bash(chmod +x *)"
+      "Bash(chmod +x *)",
+      "WebSearch",
+      "WebFetch"
     ],
     "deny": [
       "Bash(git push --force:*)",
