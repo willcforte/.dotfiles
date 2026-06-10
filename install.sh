@@ -23,10 +23,10 @@ sudo install -d -m 0755 /etc/apt/keyrings
 
 # Tailscale
 codename="$(. /etc/os-release && echo "$VERSION_CODENAME")"
-curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.noarmor.gpg" \
-  | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
-curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.tailscale-keyring.list" \
-  | sudo tee /etc/apt/sources.list.d/tailscale.list >/dev/null
+curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.noarmor.gpg" |
+  sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+curl -fsSL "https://pkgs.tailscale.com/stable/ubuntu/${codename}.tailscale-keyring.list" |
+  sudo tee /etc/apt/sources.list.d/tailscale.list >/dev/null
 
 sudo apt-get update
 
@@ -52,8 +52,8 @@ fi
 # 5. Nix (multi-user/daemon install via Determinate Systems
 #     installer — idempotent-ish via guard, enables flakes)
 #-----------------------------------------------------------
-if ! command -v nix >/dev/null 2>&1 \
-   && [ ! -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+if ! command -v nix >/dev/null 2>&1 &&
+  [ ! -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
   echo "==> Installing Nix"
   curl -fsSL https://install.determinate.systems/nix | sh -s -- install --no-confirm
 fi
@@ -74,7 +74,7 @@ fi
 echo "==> Enabling nix flakes for user"
 mkdir -p "$HOME/.config/nix"
 if ! grep -qs 'experimental-features.*flakes' "$HOME/.config/nix/nix.conf"; then
-  echo "experimental-features = nix-command flakes" >> "$HOME/.config/nix/nix.conf"
+  echo "experimental-features = nix-command flakes" >>"$HOME/.config/nix/nix.conf"
 fi
 
 #-----------------------------------------------------------

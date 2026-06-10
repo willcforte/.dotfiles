@@ -22,23 +22,23 @@ trap 'rm -rf "$tmp"' EXIT
   # The group may dump as [legacy/profiles:/] or [legacy/profiles:] depending
   # on how the keys were written (dconf load vs home-manager).
   if ! dconf dump /org/gnome/terminal/ | grep -qE '^\[legacy/profiles:/?\]'; then
-    PROFILE_UUID=$(dconf list /org/gnome/terminal/legacy/profiles:/ \
-      | grep -oE '[0-9a-f-]{36}' | head -1)
+    PROFILE_UUID=$(dconf list /org/gnome/terminal/legacy/profiles:/ |
+      grep -oE '[0-9a-f-]{36}' | head -1)
     printf '\n[legacy/profiles:/]\ndefault=%s\nlist=[%s]\n' \
       "'$PROFILE_UUID'" "'$PROFILE_UUID'"
   fi
-} > "$tmp/terminal.dconf"
-dconf dump /org/gnome/desktop/interface/ > "$tmp/desktop.dconf"
+} >"$tmp/terminal.dconf"
+dconf dump /org/gnome/desktop/interface/ >"$tmp/desktop.dconf"
 # overridden-settings is tiling-assistant runtime state with GVariant
 # maybe-types that dconf2nix (and declarative management) can't handle.
-dconf dump /org/gnome/shell/extensions/ \
-  | grep -v '^overridden-settings=' > "$tmp/extensions.dconf"
+dconf dump /org/gnome/shell/extensions/ |
+  grep -v '^overridden-settings=' >"$tmp/extensions.dconf"
 
-d2n -i "$tmp/terminal.dconf"   -o "$OUT/terminal.nix"   --root org/gnome/terminal
+d2n -i "$tmp/terminal.dconf" -o "$OUT/terminal.nix" --root org/gnome/terminal
 # dconf2nix emits the profiles group with a trailing slash, which the
 # home-manager dconf module rejects (would form a '//' path).
 sed -i 's|legacy/profiles:/" =|legacy/profiles:" =|' "$OUT/terminal.nix"
-d2n -i "$tmp/desktop.dconf"    -o "$OUT/desktop.nix"    --root org/gnome/desktop/interface
+d2n -i "$tmp/desktop.dconf" -o "$OUT/desktop.nix" --root org/gnome/desktop/interface
 d2n -i "$tmp/extensions.dconf" -o "$OUT/extensions.nix" --root org/gnome/shell/extensions
 
 echo "Regenerated $OUT/{terminal,desktop,extensions}.nix"
