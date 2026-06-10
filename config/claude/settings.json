@@ -10,6 +10,7 @@
       "Monitor",
       "LSP",
       "Skill(update-config:*)",
+      "Bash(nix run:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
@@ -146,5 +147,6 @@
   "theme": "dark",
   "preferredNotifChannel": "terminal_bell",
   "skipAutoPermissionPrompt": false,
-  "model": "opus[1m]"
+  "model": "opus[1m]",
+  "viewMode": "focus"
 }
