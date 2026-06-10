@@ -117,6 +117,7 @@ in {
         ms-vscode.remote-server
         oijaz.unicode-latex
         rust-lang.rust-analyzer
+        tailscale.vscode-tailscale
         tamasfe.even-better-toml
         tomoki1207.pdf
       ];
