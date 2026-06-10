@@ -1,0 +1,20 @@
+# Lint-before-commit gate for the dotfiles repo (shell-focused).
+# Uses Nix-installed binaries (language: system), not pre-commit's own copies.
+# Install once:  pre-commit install
+# Check everything now:  pre-commit run --all-files
+# Bypass intentionally (rare):  git commit --no-verify
+repos:
+  - repo: local
+    hooks:
+      - id: shfmt
+        name: shfmt (format check)
+        entry: shfmt -d -i 2 -ci
+        language: system
+        types: [shell]
+      - id: shellcheck
+        name: shellcheck
+        # SC1091 = "can't follow sourced file"; noise for scripts that source
+        # system paths (e.g. /etc/os-release) absent at lint time.
+        entry: shellcheck --exclude=SC1091
+        language: system
+        types: [shell]
