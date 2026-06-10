@@ -135,7 +135,7 @@ in {
         tomoki1207.pdf
       ];
       userSettings = {
-        "editor.fontSize" = 18;
+        "editor.fontSize" = 24;
         "editor.fontFamily" = "'Iosevka Nerd Font', monospace";
         "workbench.colorTheme" = "Gruvbox Dark Hard";
         "workbench.startupEditor" = "none";
@@ -144,7 +144,7 @@ in {
         "rust-analyzer.imports.granularity.group" = "module";
         "claudeCode.useTerminal" = true;
         "workbench.secondarySideBar.defaultVisibility" = "hidden";
-        "terminal.integrated.fontSize" = 18;
+        "terminal.integrated.fontSize" = 24;
       };
     };
   };
