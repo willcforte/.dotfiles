@@ -40,6 +40,17 @@ in {
     ripgrep-all
     procs
 
+    # Structural code search/rewrite (AST patterns) + YAML processor (jq for YAML)
+    ast-grep
+    yq-go
+    fzf
+
+    # Lint/format toolbox + pre-commit framework (lint-before-commit gates)
+    shellcheck
+    shfmt
+    actionlint
+    pre-commit
+
     uv
 
     # config in config/wezterm/.wezterm.lua
