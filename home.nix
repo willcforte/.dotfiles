@@ -8,6 +8,9 @@ in {
 
   home.stateVersion = "25.05";
 
+  # Suppress the notify-send "N unread news items" popup on activation.
+  news.display = "silent";
+
   imports = [
     ./modules/gnome/terminal.nix
     ./modules/gnome/desktop.nix
