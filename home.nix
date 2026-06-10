@@ -93,15 +93,17 @@ in {
   # so GNOME finds GUI apps & icons
   targets.genericLinux.enable = true;
 
-  # VS Code, fully declarative. Extensions come from the nix-vscode-extensions
-  # marketplace overlay (works because this is the official MS build on FHS
-  # Ubuntu). userSettings makes settings.json a read-only store symlink — edit
-  # settings here, not in the GUI; keep VS Code Settings Sync disabled.
+  # VS Code. Extensions come from the nix-vscode-extensions marketplace overlay
+  # (works because this is the official MS build on FHS Ubuntu). userSettings
+  # makes settings.json a read-only store symlink — edit settings here, not in
+  # the GUI; keep VS Code Settings Sync disabled.
   programs.vscode = {
     enable = true;
-    # Immutable extensions dir: exactly the declared set, no GUI installs.
-    # Flip to true if you want to install extensions ad-hoc in the GUI again.
-    mutableExtensionsDir = false;
+    # Mutable extensions dir: the declared set below is installed, but VS Code
+    # may also install extensions ad-hoc from the GUI/marketplace. GUI-installed
+    # ones are reconciled into the list below by `/dotfiles-sync`, which prompts
+    # to adopt them so they become declarative.
+    mutableExtensionsDir = true;
     profiles.default = {
       extensions = with pkgs.vscode-marketplace; [
         anthropic.claude-code
