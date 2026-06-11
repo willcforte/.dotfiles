@@ -1,4 +1,8 @@
 {
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "permissions": {
     "allow": [
       "Read",
@@ -115,6 +119,7 @@
       "Bash(git -C * clone:*)"
     ]
   },
+  "model": "sonnet[1m]",
   "hooks": {
     "Stop": [
       {
@@ -139,14 +144,9 @@
       }
     ]
   },
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  },
+  "viewMode": "focus",
   "effortLevel": "high",
   "theme": "dark",
   "preferredNotifChannel": "terminal_bell",
-  "skipAutoPermissionPrompt": false,
-  "model": "opus[1m]",
-  "viewMode": "focus"
+  "skipAutoPermissionPrompt": false
 }
