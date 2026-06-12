@@ -77,9 +77,6 @@ in {
   home.file = {
     ".wezterm.lua".source = liveLink "config/wezterm/.wezterm.lua";
     ".tmux.conf".source = liveLink "config/tmux/.tmux.conf";
-    # Only settings.json is dotfiles-managed; the rest of ~/.claude is
-    # runtime state and secrets (gitignored). liveLink keeps it writable.
-    ".claude/settings.json".source = liveLink "config/claude/settings.json";
     ".local/bin/gnome-settings-export" = {
       source = ./bin/gnome-settings-export;
       executable = true;
@@ -146,6 +143,7 @@ in {
         "editor.formatOnSave" = true;
         "rust-analyzer.imports.granularity.group" = "module";
         "claudeCode.useTerminal" = true;
+        "chat.disableAIFeatures" = true;
         "workbench.secondarySideBar.defaultVisibility" = "hidden";
         "terminal.integrated.fontSize" = 24;
       };
