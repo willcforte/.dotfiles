@@ -2,6 +2,23 @@
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
   liveLink = path: config.lib.file.mkOutOfStoreSymlink "${dotfiles}/${path}";
+  # Base VSCode settings stored in the Nix store; home.activation.vscodeSettings
+  # writes a writable copy to ~/.config/Code/User/settings.json and merges any
+  # extra keys VSCode wrote (e.g. extension popups). Nix wins on key conflicts.
+  vscodeBaseSettings = pkgs.writeText "vscode-nix-settings.json" (builtins.toJSON {
+    "editor.fontSize" = 24;
+    "editor.fontFamily" = "'Iosevka Nerd Font', monospace";
+    "workbench.colorTheme" = "Gruvbox Dark Hard";
+    "workbench.startupEditor" = "none";
+    "editor.codeActionsOnSave" = [ "source.organizeImports" ];
+    "editor.formatOnSave" = true;
+    "rust-analyzer.imports.granularity.group" = "module";
+    "claudeCode.useTerminal" = true;
+    "chat.disableAIFeatures" = true;
+    "workbench.secondarySideBar.defaultVisibility" = "hidden";
+    "terminal.integrated.fontSize" = 24;
+    "security.workspace.trust.enabled" = false;
+  });
 in {
   home.username = "will";
   home.homeDirectory = "/home/will";
@@ -87,6 +104,25 @@ in {
     };
   };
 
+  # Write a writable settings.json (not a store symlink) so VSCode can persist
+  # extension popup responses. On each switch: merge surviving VSCode-written keys
+  # with the Nix base (Nix wins on conflict). Also writes .nix-settings-base.json
+  # as a snapshot for dotfiles-sync to diff against when adopting new keys.
+  home.activation.vscodeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    _cfg="$HOME/.config/Code/User"
+    _settings="$_cfg/settings.json"
+    _base="${vscodeBaseSettings}"
+    mkdir -p "$_cfg"
+    cp --no-preserve=mode --remove-destination "$_base" "$_cfg/.nix-settings-base.json"
+    if [ -f "$_settings" ] && [ ! -L "$_settings" ]; then
+      ${pkgs.jq}/bin/jq -s '.[0] * .[1]' "$_settings" "$_base" > "$_settings.tmp"
+      mv "$_settings.tmp" "$_settings"
+    else
+      rm -f "$_settings"
+      cp --no-preserve=mode "$_base" "$_settings"
+    fi
+  '';
+
   # Make fontconfig see fonts from home.packages on non-NixOS.
   fonts.fontconfig.enable = true;
 
@@ -94,9 +130,10 @@ in {
   targets.genericLinux.enable = true;
 
   # VS Code. Extensions come from the nix-vscode-extensions marketplace overlay
-  # (works because this is the official MS build on FHS Ubuntu). userSettings
-  # makes settings.json a read-only store symlink — edit settings here, not in
-  # the GUI; keep VS Code Settings Sync disabled.
+  # (works because this is the official MS build on FHS Ubuntu). Settings are
+  # managed by home.activation.vscodeSettings (writable file, not a store
+  # symlink) — edit vscodeBaseSettings in the let block above. Keep VS Code
+  # Settings Sync disabled.
   programs.vscode = {
     enable = true;
     # Mutable extensions dir: the declared set below is installed, but VS Code
@@ -109,6 +146,7 @@ in {
         anthropic.claude-code
         charliermarsh.ruff
         davidanson.vscode-markdownlint
+        github.vscode-github-actions
         jdinhlife.gruvbox
         leanprover.lean4
         ms-azuretools.vscode-containers
@@ -134,19 +172,6 @@ in {
         tamasfe.even-better-toml
         tomoki1207.pdf
       ];
-      userSettings = {
-        "editor.fontSize" = 24;
-        "editor.fontFamily" = "'Iosevka Nerd Font', monospace";
-        "workbench.colorTheme" = "Gruvbox Dark Hard";
-        "workbench.startupEditor" = "none";
-        "editor.codeActionsOnSave" = [ "source.organizeImports" ];
-        "editor.formatOnSave" = true;
-        "rust-analyzer.imports.granularity.group" = "module";
-        "claudeCode.useTerminal" = true;
-        "chat.disableAIFeatures" = true;
-        "workbench.secondarySideBar.defaultVisibility" = "hidden";
-        "terminal.integrated.fontSize" = 24;
-      };
     };
   };
 
