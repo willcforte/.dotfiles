@@ -25,6 +25,10 @@ in {
 
   home.stateVersion = "25.05";
 
+  # pixi installed via official installer (PIXI_NO_PATH_UPDATE=1); keep its
+  # self-updating binary on PATH declaratively.
+  home.sessionPath = [ "$HOME/.pixi/bin" ];
+
   # Suppress the notify-send "N unread news items" popup on activation.
   news.display = "silent";
 
