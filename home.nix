@@ -242,5 +242,28 @@ in {
   programs.starship.enable = true;
   programs.zoxide.enable = true;
 
+  # Syncthing — instant peer-to-peer sync of ~/.claude/memory across machines,
+  # locked to the Tailscale tailnet (global discovery, relays, and NAT traversal
+  # off; peers added by static tailnet IP). Devices/folders are filled in once each
+  # machine's device ID is known (two-phase bring-up). Keys persist in the state
+  # dir, so device IDs stay stable across rebuilds.
+  services.syncthing = {
+    enable = true;
+    overrideDevices = true;
+    overrideFolders = true;
+    settings = {
+      options = {
+        globalAnnounceEnabled = false;
+        localAnnounceEnabled = false;
+        relaysEnabled = false;
+        natEnabled = false;
+        urAccepted = -1;
+        crashReportingEnabled = false;
+      };
+      devices = { };
+      folders = { };
+    };
+  };
+
   programs.home-manager.enable = true;
 }
