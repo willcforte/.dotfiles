@@ -16,8 +16,12 @@ let
     "claudeCode.useTerminal" = true;
     "chat.disableAIFeatures" = true;
     "workbench.secondarySideBar.defaultVisibility" = "hidden";
-    "terminal.integrated.fontSize" = 24;
+    "terminal.integrated.fontSize" = 22;
     "security.workspace.trust.enabled" = false;
+    "accessibility.signals.terminalBell" = { "sound" = "on"; };
+    "makefile.configureOnOpen" = true;
+    "terminal.integrated.enableBell" = true;
+    "terminal.integrated.enableVisualBell" = true;
   });
 in {
   home.username = "will";
@@ -151,10 +155,12 @@ in {
         charliermarsh.ruff
         davidanson.vscode-markdownlint
         github.vscode-github-actions
+        github.vscode-pull-request-github
         jdinhlife.gruvbox
         leanprover.lean4
         ms-azuretools.vscode-containers
         ms-python.debugpy
+        ms-python.mypy-type-checker
         ms-python.python
         ms-python.vscode-pylance
         ms-python.vscode-python-envs
@@ -171,7 +177,9 @@ in {
         ms-vscode.remote-explorer
         ms-vscode.remote-server
         oijaz.unicode-latex
+        renan-r-santos.pixi-code
         rust-lang.rust-analyzer
+        singularityinc.claude-notifier
         tailscale.vscode-tailscale
         tamasfe.even-better-toml
         tomoki1207.pdf
