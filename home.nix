@@ -260,8 +260,24 @@ in {
         urAccepted = -1;
         crashReportingEnabled = false;
       };
-      devices = { };
-      folders = { };
+      devices = {
+        "persona-0020" = {
+          id = "XHDQTBK-C7X5RM2-IJK4LWP-A4QE2K4-BR44Q5C-C53XGC5-D5FCB65-KAEVQAM";
+          addresses = [ "tcp://100.119.209.20:22000" ];
+        };
+        "will-pc14250" = {
+          id = "247PMAV-6DKYW24-TASP2EX-LMGYIKE-MTHNRZ4-VJ2GOAB-VGDU24S-PAUWFQX";
+          addresses = [ "tcp://100.97.45.110:22000" ];
+        };
+      };
+      folders."claude-memory" = {
+        path = "/home/will/.claude/memory";
+        devices = [ "persona-0020" "will-pc14250" ];
+        versioning = {
+          type = "staggered";
+          params = { cleanInterval = "3600"; maxAge = "2592000"; };
+        };
+      };
     };
   };
 
