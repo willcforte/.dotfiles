@@ -236,6 +236,9 @@ in {
       [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ] \
         && . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 
+      # git helpers: gpush/gpull/gcom/gcpp (see ~/.claude/scripts/gq-shell.sh)
+      [ -f "$HOME/.claude/scripts/gq-shell.sh" ] && . "$HOME/.claude/scripts/gq-shell.sh"
+
       # Machine-specific config and secrets (not in dotfiles repo)
       [ -f "$HOME/.bashrc.local" ] && . "$HOME/.bashrc.local"
     '';
