@@ -81,6 +81,9 @@ in {
 
     uv
 
+    # CLI proxy that cuts LLM token use on common dev commands
+    rtk
+
     # config in config/wezterm/.wezterm.lua
     wezterm
 
