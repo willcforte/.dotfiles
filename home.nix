@@ -115,8 +115,6 @@ in {
     };
     ".claude/LESSONS.md".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.claude-private/LESSONS.md";
-    ".claude/memory".source =
-      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.claude-private/memory";
   };
 
   # Write a writable settings.json (not a store symlink) so VSCode can persist
