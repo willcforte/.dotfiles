@@ -257,8 +257,8 @@ in {
   programs.starship.enable = true;
   programs.zoxide.enable = true;
 
-  # Syncthing — instant peer-to-peer sync of ~/.claude-private (LESSONS.md + the
-  # memory/ folder, symlinked into ~/.claude) across machines, locked to the
+  # Syncthing — instant peer-to-peer sync of ~/.claude-private (LESSONS.md,
+  # symlinked into ~/.claude) across machines, locked to the
   # Tailscale tailnet (global discovery, relays, and NAT traversal off; peers added
   # by static tailnet IP). Carries file content only — .git is excluded via a
   # .stignore (see home.activation.claudePrivateStignore); git history syncs
