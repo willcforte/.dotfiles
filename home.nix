@@ -113,6 +113,10 @@ in {
       source = ./bin/update-config.sh;
       executable = true;
     };
+    ".claude/LESSONS.md".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.claude-private/LESSONS.md";
+    ".claude/memory".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.claude-private/memory";
   };
 
   # Write a writable settings.json (not a store symlink) so VSCode can persist
@@ -132,6 +136,12 @@ in {
       rm -f "$_settings"
       cp --no-preserve=mode "$_base" "$_settings"
     fi
+  '';
+
+  # Keep Syncthing from syncing the .claude-private git internals — content only.
+  home.activation.claudePrivateStignore = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    _d="$HOME/.claude-private"
+    [ -d "$_d" ] && printf '.git\n' > "$_d/.stignore" || true
   '';
 
   # Make fontconfig see fonts from home.packages on non-NixOS.
@@ -249,11 +259,13 @@ in {
   programs.starship.enable = true;
   programs.zoxide.enable = true;
 
-  # Syncthing — instant peer-to-peer sync of ~/.claude/memory across machines,
-  # locked to the Tailscale tailnet (global discovery, relays, and NAT traversal
-  # off; peers added by static tailnet IP). Devices/folders are filled in once each
-  # machine's device ID is known (two-phase bring-up). Keys persist in the state
-  # dir, so device IDs stay stable across rebuilds.
+  # Syncthing — instant peer-to-peer sync of ~/.claude-private (LESSONS.md + the
+  # memory/ folder, symlinked into ~/.claude) across machines, locked to the
+  # Tailscale tailnet (global discovery, relays, and NAT traversal off; peers added
+  # by static tailnet IP). Carries file content only — .git is excluded via a
+  # .stignore (see home.activation.claudePrivateStignore); git history syncs
+  # separately through the GitHub remote. Keys persist in the state dir, so device
+  # IDs stay stable across rebuilds.
   services.syncthing = {
     enable = true;
     overrideDevices = true;
@@ -277,8 +289,8 @@ in {
           addresses = [ "tcp://100.97.45.110:22000" ];
         };
       };
-      folders."claude-memory" = {
-        path = "/home/will/.claude/memory";
+      folders."claude-private" = {
+        path = "/home/will/.claude-private";
         devices = [ "persona-0020" "will-pc14250" ];
         versioning = {
           type = "staggered";
