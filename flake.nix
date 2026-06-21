@@ -4,7 +4,13 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     claude-code-nix.url = "github:sadjow/claude-code-nix";
-    zen-browser.url = "github:0xc000022070/zen-browser-flake";
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
+    };
     solaar = {
       url = "github:Svenum/Solaar-Flake/main";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -38,7 +44,7 @@
     };
   };
 
-  outputs = { nixpkgs, home-manager, claude-code-nix, zen-browser, system-manager, solaar, nix-system-graphics, nix-vscode-extensions, ... }:
+  outputs = inputs@{ nixpkgs, home-manager, claude-code-nix, system-manager, solaar, nix-system-graphics, nix-vscode-extensions, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
@@ -51,12 +57,12 @@
       # (nix-system-graphics), so no nixGL wrapping is needed.
       flakePkgs = { home.packages = [
         claude-code-nix.packages.${system}.claude-code
-        zen-browser.packages.${system}.default
       ]; };
 
       # Base config plus host-specific modules (will@<hostname>) where applicable.
       mkHome = modules: home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
+        extraSpecialArgs = { inherit inputs; };
         modules = [ ./home.nix flakePkgs ] ++ modules;
       };
     in {
