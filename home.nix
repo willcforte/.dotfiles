@@ -25,7 +25,6 @@ in {
     ./modules/programs/vscode.nix
     ./modules/programs/git.nix
     ./modules/shell/bash.nix
-    ./modules/services/syncthing.nix
   ];
 
   home.packages = with pkgs; [
