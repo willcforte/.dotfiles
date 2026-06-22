@@ -98,6 +98,12 @@ in {
       executable = true;
     };
     ".claude/LESSONS.md".source = mkMutableSymlink "LESSONS.md";
+
+    # Zen reads user.js from the legacy ~/.zen profile (not the module's XDG
+    # ~/.config/zen). Profile dir id is host-specific; inert on other hosts.
+    ".zen/8923kzk4.Default (release)/user.js".text = ''
+      user_pref("cookiebanners.service.mode", 2);
+    '';
   };
 
   # Make fontconfig see fonts from home.packages on non-NixOS.
