@@ -64,7 +64,6 @@ in {
         oijaz.unicode-latex
         renan-r-santos.pixi-code
         rust-lang.rust-analyzer
-        singularityinc.claude-notifier
         tailscale.vscode-tailscale
         tamasfe.even-better-toml
         tomoki1207.pdf
