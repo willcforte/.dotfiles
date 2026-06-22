@@ -2,6 +2,8 @@
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
   liveLink = path: config.lib.file.mkOutOfStoreSymlink "${dotfiles}/${path}";
+  mutableConfig = "${config.home.homeDirectory}/.claude-private";
+  mkMutableSymlink = path: config.lib.file.mkOutOfStoreSymlink "${mutableConfig}/${path}";
 in {
   home.username = "will";
   home.homeDirectory = "/home/will";
@@ -96,8 +98,7 @@ in {
       source = ./bin/update-config.sh;
       executable = true;
     };
-    ".claude/LESSONS.md".source =
-      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.claude-private/LESSONS.md";
+    ".claude/LESSONS.md".source = mkMutableSymlink "LESSONS.md";
   };
 
   # Make fontconfig see fonts from home.packages on non-NixOS.
