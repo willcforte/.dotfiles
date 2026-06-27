@@ -42,7 +42,16 @@
   };
 
   # Shell integrations
-  programs.starship.enable = true;
+  programs.starship = {
+    enable = true;
+    settings.hostname = {
+      ssh_only = false;
+      aliases = {
+        "persona-0020" = "p20";
+        "will-pc14250" = "wpc";
+      };
+    };
+  };
   programs.zoxide.enable = true;
   programs.fzf = {
     enable = true;
