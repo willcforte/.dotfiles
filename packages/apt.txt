@@ -17,3 +17,6 @@ openssh-server
 
 # Third-party repos (added by install.sh before this list is installed)
 tailscale
+
+# Photo editing
+gimp
