@@ -28,60 +28,47 @@ in {
   ];
 
   home.packages = with pkgs; [
+    # useful command explanations
+    tldr # e.g. tldr fzf
+
+    # CLI tools
     gh
     neovim
+    lazygit
+    lazydocker
     tmux
     btop
     tree
-    lazygit
-    lazydocker
     gearlever
-    pinta
     solaar
-
-    # CLI tools (migrated from apt)
     lsd
-    nmap
-    vim
-    tldr
-
-    # Rust-built CLI tools
     bat
     dust
     fd
     ripgrep
     ripgrep-all
     procs
-
-    # Structural code search/rewrite (AST patterns) + YAML processor (jq for YAML)
     ast-grep
     yq-go
-
-    # Lint/format toolbox + pre-commit framework (lint-before-commit gates)
     shellcheck
     shfmt
     actionlint
     pre-commit
-
+    nmap
     uv
-
-    # CLI proxy that cuts LLM token use on common dev commands
     rtk
-
-    # config in config/wezterm/.wezterm.lua
     wezterm
-
     nodejs
+    fzf
 
-    # Terminal font
-    (iosevka-bin.override { variant = "SGr-IosevkaTermSS18"; })
-
-    # GUI apps (formerly flatpak/snap/apt). GL via /run/opengl-driver
-    # (nix-system-graphics) — no nixGL wrapping needed.
+    # GUI apps
     obsidian
     slack
     vlc
-    flameshot
+    gimp
+
+    # Terminal font
+    (iosevka-bin.override { variant = "SGr-IosevkaTermSS18"; })
   ];
 
   # Symlinks to dotfiles
