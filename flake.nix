@@ -3,6 +3,18 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    home-manager = {
+      url = "github:nix-community/home-manager/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nix-system-graphics = {
+      url = "github:soupglasses/nix-system-graphics";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    system-manager = {
+      url = "github:numtide/system-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     claude-code-nix.url = "github:sadjow/claude-code-nix";
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
@@ -15,31 +27,8 @@
       url = "github:Svenum/Solaar-Flake/main";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # System-wide OpenGL drivers on non-NixOS: populates /run/opengl-driver
-    # via system-manager, so Nix GUI apps need no nixGL wrapping.
-    nix-system-graphics = {
-      url = "github:soupglasses/nix-system-graphics";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Full VS Code marketplace (incl. MS-proprietary) as Nix packages, so
-    # extensions are declarative. Provides the vscode-marketplace overlay.
     nix-vscode-extensions = {
       url = "github:nix-community/nix-vscode-extensions";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Declarative system-level config (/etc, systemd) on non-NixOS.
-    # system-manager tracks nixos-unstable; safe to share our nixpkgs now
-    # that we're on unstable too (its userborn module needs unstable).
-    system-manager = {
-      url = "github:numtide/system-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    home-manager = {
-      url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
