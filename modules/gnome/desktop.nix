@@ -9,7 +9,7 @@ with lib.hm.gvariant;
       clock-format = "12h";
       clock-show-date = true;
       clock-show-weekday = true;
-      color-scheme = "prefer-dark";
+      color-scheme = "light";
       enable-hot-corners = false;
       gtk-theme = "Yaru-dark";
       icon-theme = "Yaru";
