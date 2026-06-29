@@ -18,6 +18,7 @@ in {
   news.display = "silent";
 
   imports = [
+    ./modules/fonts.nix
     ./modules/gnome.nix
     ./modules/programs/zen.nix
     ./modules/programs/vscode.nix
@@ -64,9 +65,6 @@ in {
     slack
     vlc
     gimp
-
-    # Terminal font
-    (iosevka-bin.override { variant = "SGr-IosevkaTermSS18"; })
   ];
 
   # Symlinks to dotfiles
@@ -89,9 +87,6 @@ in {
       user_pref("cookiebanners.service.mode", 2);
     '';
   };
-
-  # Make fontconfig see fonts from home.packages on non-NixOS.
-  fonts.fontconfig.enable = true;
 
   # so GNOME finds GUI apps & icons
   targets.genericLinux.enable = true;
