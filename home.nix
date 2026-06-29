@@ -24,6 +24,7 @@ in {
     ./modules/programs/vscode.nix
     ./modules/programs/git.nix
     ./modules/shell/bash.nix
+    ./modules/services/tailscale-ssh-probe.nix
   ];
 
   home.packages = with pkgs; [
