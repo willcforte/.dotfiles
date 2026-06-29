@@ -21,6 +21,11 @@ with lib.hm.gvariant;
       font-hinting = "full";
     };
 
+    # wm titlebar
+    "org/gnome/desktop/wm/preferences" = {
+      titlebar-font = "SF Pro Display Semibold 11";
+    };
+
     # dock
     "org/gnome/shell/extensions/dash-to-dock" = {
       dash-max-icon-size = 46;
