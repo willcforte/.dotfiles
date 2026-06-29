@@ -5,6 +5,7 @@ with lib.hm.gvariant;
 
 {
   dconf.settings = {
+    # desktop
     "org/gnome/desktop/interface" = {
       clock-format = "12h";
       clock-show-date = true;
@@ -15,6 +16,7 @@ with lib.hm.gvariant;
       icon-theme = "Yaru";
     };
 
+    # dock
     "org/gnome/shell/extensions/dash-to-dock" = {
       dash-max-icon-size = 46;
       dock-fixed = true;
@@ -22,6 +24,7 @@ with lib.hm.gvariant;
       multi-monitor = false;
     };
 
+    # date
     "org/gnome/shell/extensions/date-menu-formatter" = {
       font-size = 12;
       font-weight = "bold";
@@ -34,6 +37,7 @@ with lib.hm.gvariant;
       check-x11wayland = true;
     };
 
+    # wm
     "org/gnome/shell/extensions/tiling-assistant" = {
       active-window-hint-color = "rgb(211,70,21)";
       last-version-installed = 46;
@@ -49,6 +53,16 @@ with lib.hm.gvariant;
       default-size-columns = 80;
       use-system-font = true;
       visible-name = "Will";
+    };
+
+    # fonts
+    "org/gnome/desktop/interface" = {
+        document-font-name = "";
+        monospace-font-name = "";
+        font-name = "";
+        font-antialiasing = "";
+        font-hinting = "";
+
     };
   };
 }
