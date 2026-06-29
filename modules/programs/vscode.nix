@@ -6,7 +6,7 @@ let
   vscodeBaseSettings = pkgs.writeText "vscode-nix-settings.json" (builtins.toJSON {
     "editor.fontSize" = 24;
     "editor.fontFamily" = "'Iosevka Nerd Font', monospace";
-    "workbench.colorTheme" = "Gruvbox Dark Hard";
+    "workbench.colorTheme" = "Gruvbox Light Hard";
     "workbench.startupEditor" = "none";
     "editor.codeActionsOnSave" = [ "source.organizeImports" ];
     "editor.formatOnSave" = true;
