@@ -38,6 +38,37 @@
 
       # Machine-specific config and secrets (not in dotfiles repo)
       [ -f "$HOME/.bashrc.local" ] && . "$HOME/.bashrc.local"
+
+      # Tailscale SSH re-auth: watch an interactive ssh session for the
+      # "additional check" login URL; a clickable notification opens + focuses
+      # it in the browser. Companion to the resume-probe user service.
+      _tsssh_watch() {
+        local log="$1" url seen=""
+        while :; do
+          url=$(grep -ohE 'https://login\.tailscale\.com/a/[A-Za-z0-9]+' "$log" \
+                  2>/dev/null | head -1)
+          if [ -n "$url" ] && [ "$url" != "$seen" ]; then
+            seen="$url"
+            if notify-send -u critical -A "open=Authenticate" \
+                 "Tailscale SSH auth required" "Click to open the login page." \
+                 | grep -q open; then
+              xdg-open "$url" >/dev/null 2>&1
+            fi
+          fi
+          sleep 1
+        done
+      }
+
+      ssh() {
+        if [ ! -t 1 ]; then command ssh "$@"; return; fi
+        local log; log=$(mktemp)
+        _tsssh_watch "$log" & local w=$!
+        script -qefc "$(printf '%q ' command ssh "$@")" "$log"
+        local rc=$?
+        kill "$w" 2>/dev/null
+        rm -f "$log"
+        return $rc
+      }
     '';
   };
 
