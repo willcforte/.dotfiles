@@ -14,6 +14,11 @@ with lib.hm.gvariant;
       enable-hot-corners = false;
       gtk-theme = "Yaru-dark";
       icon-theme = "Yaru";
+      font-name = "SF Pro Display 11";
+      document-font-name = "SF Pro Text 11";
+      monospace-font-name = "IosevkaTerm SS18 12";
+      font-antialiasing = "rgba";
+      font-hinting = "full";
     };
 
     # dock
@@ -55,14 +60,5 @@ with lib.hm.gvariant;
       visible-name = "Will";
     };
 
-    # fonts
-    "org/gnome/desktop/interface" = {
-        document-font-name = "";
-        monospace-font-name = "";
-        font-name = "";
-        font-antialiasing = "";
-        font-hinting = "";
-
-    };
   };
 }
