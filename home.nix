@@ -80,6 +80,10 @@ in {
       source = ./bin/update-config.sh;
       executable = true;
     };
+    ".local/bin/ts-ssh" = {
+      source = ./bin/ts-ssh.sh;
+      executable = true;
+    };
     ".claude/LESSONS.md".source = mkMutableSymlink "LESSONS.md";
 
     # Zen reads user.js from the legacy ~/.zen profile (not the module's XDG
