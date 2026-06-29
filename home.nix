@@ -18,9 +18,7 @@ in {
   news.display = "silent";
 
   imports = [
-    ./modules/gnome/terminal.nix
-    ./modules/gnome/desktop.nix
-    ./modules/gnome/extensions.nix
+    ./modules/gnome.nix
     ./modules/programs/zen.nix
     ./modules/programs/vscode.nix
     ./modules/programs/git.nix
