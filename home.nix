@@ -57,6 +57,13 @@ in {
     ast-grep
     yq-go
 
+    # tomlq (jq for TOML), from python `yq`. Expose only tomlq so its `yq`
+    # binary doesn't collide with yq-go above.
+    (runCommand "tomlq" { } ''
+      mkdir -p $out/bin
+      ln -s ${yq}/bin/tomlq $out/bin/tomlq
+    '')
+
     # Lint/format toolbox + pre-commit framework (lint-before-commit gates)
     shellcheck
     shfmt
