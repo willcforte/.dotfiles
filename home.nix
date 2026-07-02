@@ -18,13 +18,13 @@ in {
   news.display = "silent";
 
   imports = [
-    ./modules/gnome/terminal.nix
-    ./modules/gnome/desktop.nix
-    ./modules/gnome/extensions.nix
+    ./modules/fonts.nix
+    ./modules/gnome.nix
     ./modules/programs/zen.nix
     ./modules/programs/vscode.nix
     ./modules/programs/git.nix
     ./modules/shell/bash.nix
+    ./modules/services/tailscale-ssh-probe.nix
   ];
 
   home.packages = with pkgs; [
@@ -44,8 +44,7 @@ in {
     nmap
     vim
     tldr
-
-    # Rust-built CLI tools
+    fzf
     bat
     dust
     fd
@@ -80,15 +79,13 @@ in {
 
     nodejs
 
-    # Terminal font
-    (iosevka-bin.override { variant = "SGr-IosevkaTermSS18"; })
-
     # GUI apps (formerly flatpak/snap/apt). GL via /run/opengl-driver
     # (nix-system-graphics) — no nixGL wrapping needed.
     obsidian
     slack
     vlc
     flameshot
+    gimp
   ];
 
   # Symlinks to dotfiles
@@ -103,6 +100,10 @@ in {
       source = ./bin/update-config.sh;
       executable = true;
     };
+    ".local/bin/ts-ssh" = {
+      source = ./bin/ts-ssh.sh;
+      executable = true;
+    };
     ".claude/LESSONS.md".source = mkMutableSymlink "LESSONS.md";
 
     # Zen reads user.js from the legacy ~/.zen profile (not the module's XDG
@@ -111,9 +112,6 @@ in {
       user_pref("cookiebanners.service.mode", 2);
     '';
   };
-
-  # Make fontconfig see fonts from home.packages on non-NixOS.
-  fonts.fontconfig.enable = true;
 
   # so GNOME finds GUI apps & icons
   targets.genericLinux.enable = true;

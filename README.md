@@ -33,6 +33,14 @@ apparmor/         # AppArmor profiles for nix GUI-app sandboxes
 
 ## Install
 
+First make sure you have installed the Nix package manager for Ubuntu:
+
+```bash
+curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh -s -- --daemon
+```
+
+Then clone the repo + run install:
+
 ```bash
 git clone https://github.com/willcforte/.dotfiles.git ~/.dotfiles
 cd ~/.dotfiles

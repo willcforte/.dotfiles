@@ -6,7 +6,7 @@ let
   vscodeBaseSettings = pkgs.writeText "vscode-nix-settings.json" (builtins.toJSON {
     "editor.fontSize" = 24;
     "editor.fontFamily" = "'Iosevka Nerd Font', monospace";
-    "workbench.colorTheme" = "Gruvbox Dark Hard";
+    "workbench.colorTheme" = "Gruvbox Light Hard";
     "workbench.startupEditor" = "none";
     "editor.codeActionsOnSave" = [ "source.organizeImports" ];
     "editor.formatOnSave" = true;
@@ -20,6 +20,8 @@ let
     "makefile.configureOnOpen" = true;
     "terminal.integrated.enableBell" = true;
     "terminal.integrated.enableVisualBell" = true;
+    "remote.SSH.path" = "/home/will/.local/bin/ts-ssh";
+    "remote.SSH.connectTimeout" = 60;
   });
 in {
   # VS Code. Extensions come from the nix-vscode-extensions marketplace overlay
