@@ -39,8 +39,9 @@ in {
     pinta
     solaar
     jujutsu
+    lazyjj
 
-    # CLI tools (migrated from apt)
+    # CLI tools
     lsd
     nmap
     vim
