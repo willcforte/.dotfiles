@@ -1,7 +1,7 @@
 local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 
-config.color_scheme = 'GruvboxDark'
+config.color_scheme = 'GruvboxLight'
 config.font = wezterm.font 'Iosevka Term SS18'
 config.font_size = 18
 config.initial_cols = 100
@@ -11,7 +11,7 @@ config.hide_tab_bar_if_only_one_tab = true
 config.hide_mouse_cursor_when_typing = false
 
 -- 'SystemBeep' is a no-op on Linux, so play the bell ourselves via the bell event.
-config.audible_bell = 'Disabled'
+config.audible_bell = 'SystemBeep'
 wezterm.on('bell', function(window, pane)
   wezterm.log_info('bell fired')
   wezterm.background_child_process {

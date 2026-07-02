@@ -38,11 +38,25 @@
 
       # Machine-specific config and secrets (not in dotfiles repo)
       [ -f "$HOME/.bashrc.local" ] && . "$HOME/.bashrc.local"
+
+      # Tailscale SSH re-auth: route ssh through the ts-ssh wrapper, which
+      # surfaces the "additional check" login URL (clickable notification here,
+      # auto-open from VSCode via remote.SSH.path). See bin/ts-ssh.sh.
+      ssh() { "$HOME/.local/bin/ts-ssh" "$@"; }
     '';
   };
 
   # Shell integrations
-  programs.starship.enable = true;
+  programs.starship = {
+    enable = true;
+    settings.hostname = {
+      ssh_only = false;
+      aliases = {
+        "persona-0020" = "p20";
+        "will-pc14250" = "wpc";
+      };
+    };
+  };
   programs.zoxide.enable = true;
   programs.fzf = {
     enable = true;
