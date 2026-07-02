@@ -38,6 +38,7 @@ in {
     gearlever
     pinta
     solaar
+    jujutsu
 
     # CLI tools (migrated from apt)
     lsd
