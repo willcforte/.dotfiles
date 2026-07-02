@@ -11,4 +11,14 @@
       credential."https://gist.github.com".helper = [ "" "!gh auth git-credential" ];
     };
   };
+
+  programs.jujutsu = {
+    enable = true;
+    settings = {
+      user.name = "Will C. Forte";
+      user.email = "willcforte@gmail.com";
+      aliases.bl = [ "bookmark" "list" "--all-remotes" ];
+      revsets.log = "@ | bookmarks() | remote_bookmarks() | trunk()";
+    };
+  };
 }
