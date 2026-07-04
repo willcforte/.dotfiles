@@ -26,6 +26,11 @@ with lib.hm.gvariant;
       titlebar-font = "SF Pro Display Semibold 11";
     };
 
+    # desktop icons
+    "org/gnome/desktop/background" = {
+      show-desktop-icons = false;
+    };
+
     # dock
     "org/gnome/shell/extensions/dash-to-dock" = {
       dash-max-icon-size = 46;
