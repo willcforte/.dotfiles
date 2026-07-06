@@ -43,6 +43,9 @@
       # surfaces the "additional check" login URL (clickable notification here,
       # auto-open from VSCode via remote.SSH.path). See bin/ts-ssh.sh.
       ssh() { "$HOME/.local/bin/ts-ssh" "$@"; }
+
+      # pixi autocompletion
+      eval "$(pixi completion --shell bash)"
     '';
   };
 
