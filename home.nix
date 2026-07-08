@@ -41,6 +41,14 @@ in {
     jujutsu
     lazyjj
 
+    # version control
+    gh
+    lazygit
+    lazydocker
+    jujutsu
+    lazyjj
+    gh-dash
+
     # CLI tools
     lsd
     nmap
