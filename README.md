@@ -21,7 +21,7 @@ system-level config.
 ## Layout
 
 ```
-install.sh            # Linux bootstrap: apt repos/packages, rust, nix, home-manager
+install.sh            # Linux single entry point: installs missing prereqs + applies config (== update-config)
 install-darwin.sh     # macOS single entry point: installs missing prereqs + applies config (== update-config)
 flake.nix             # flake inputs + per-system homeConfigurations + systemConfigs/darwinConfigurations
 home.nix              # shared base config: packages, git, and the dotfiles (home.file)
@@ -41,43 +41,40 @@ packages/              # apt manifest (apt.txt, Linux only)
 apparmor/               # AppArmor profiles for nix GUI-app sandboxes (Linux only)
 ```
 
-Platform-specific modules are Linux/Darwin-gated in `home.nix` via
-`lib.optionals pkgs.stdenv.isLinux/isDarwin`, so the same `home.nix` evaluates
-on both `x86_64-linux` and `aarch64-darwin`.
+Platform-specific modules are gated in `home.nix` via `lib.optionals isDarwin`
+(where `isDarwin` is a flake-level `specialArg`, so it's safe to use inside
+`imports` — see flake.nix), letting the same `home.nix` evaluate on both
+`x86_64-linux` and `aarch64-darwin`.
 
-## Install (Ubuntu)
+Both platforms use a **single idempotent script** for both first-time install
+and day-to-day updates — run it anytime; it installs whatever prerequisites
+are missing and then applies the flake config. After the first run it's
+symlinked to `~/.local/bin/update-config`, so `update-config` and the install
+script are interchangeable.
 
-First make sure you have installed the Nix package manager for Ubuntu:
-
-```bash
-curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh -s -- --daemon
-```
-
-Then clone the repo + run install:
+## Install / update (Ubuntu)
 
 ```bash
 git clone https://github.com/willcforte/.dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
-./install.sh          # apt + rust + nix + home-manager (asks for sudo)
+./install.sh           # apt + rust + nix + home-manager + system-manager (asks for sudo)
 ```
-
-### Applying changes (Ubuntu)
-
-After editing any `.nix` file, re-apply the configuration:
 
 ```bash
-update-config         # home-manager switch, then system-manager switch (prompts for sudo)
+update-config          # == ./install.sh
 ```
 
-`update-config` applies both the user config (home-manager) and the system
-config (`system.nix` via system-manager). The system step self-escalates and
-will prompt for your sudo password.
+The apt-package and AppArmor steps are guarded (dpkg / file compare), so
+routine `update-config` runs skip them — and their sudo prompts — when nothing
+is missing, leaving just the home-manager switch and the system-manager
+`--sudo` switch. Nix is installed via the Determinate Systems installer, which
+is reliable on Linux (the macOS box uses the plain installer instead).
 
 ## Install / update (macOS)
 
-macOS uses a **single idempotent script** for both first-time install and
-day-to-day updates — run it anytime; it installs whatever prerequisites are
-missing (Nix, Homebrew, rustup, pixi) and then applies the flake config:
+macOS uses the same **single idempotent script** pattern — run it anytime; it
+installs whatever prerequisites are missing (Nix, Homebrew, rustup, pixi) and
+then applies the flake config:
 
 ```bash
 git clone https://github.com/willcforte/.dotfiles.git ~/.dotfiles

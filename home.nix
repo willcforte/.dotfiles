@@ -102,11 +102,11 @@ in {
       source = ./bin/gnome-settings-export;
       executable = true;
     };
-    # On macOS this is the single idempotent install-or-update script; on Linux
-    # it's the lighter home-manager+system-manager switch (install.sh does the
-    # heavier apt/nix bootstrap there).
+    # Single idempotent install-or-update script per platform: installs missing
+    # prereqs then applies the flake config. Same command (`update-config`) on
+    # both; guarded so routine updates skip the heavy/sudo bits.
     ".local/bin/update-config" = {
-      source = if isDarwin then ./install-darwin.sh else ./bin/update-config.sh;
+      source = if isDarwin then ./install-darwin.sh else ./install.sh;
       executable = true;
     };
     ".local/bin/ts-ssh" = {
