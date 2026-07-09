@@ -39,8 +39,8 @@
       # Machine-specific config and secrets (not in dotfiles repo)
       [ -f "$HOME/.zshrc.local" ] && . "$HOME/.zshrc.local"
 
-      # pixi autocompletion
-      eval "$(pixi completion --shell zsh)"
+      # pixi autocompletion (guarded: pixi is installed out-of-band, may be absent)
+      command -v pixi >/dev/null && eval "$(pixi completion --shell zsh)"
     ''
     + (if isDarwin then "" else ''
 
