@@ -44,8 +44,12 @@
     };
 
     # macOS system config (this Mac's analogue of system-manager on Linux).
+    # Pinned to a commit contemporaneous with the nixpkgs pin: nix-darwin master
+    # later started passing `--sidebar-depth` to nixos-render-docs, which our
+    # (older) pinned nixpkgs can't parse, breaking the whole system build. Bump
+    # this together with nixpkgs.
     nix-darwin = {
-      url = "github:nix-darwin/nix-darwin/master";
+      url = "github:nix-darwin/nix-darwin/f8531f95fe4abebe17b794f3f6c01a8f886b97bd";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
