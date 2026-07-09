@@ -102,8 +102,11 @@ in {
       source = ./bin/gnome-settings-export;
       executable = true;
     };
+    # On macOS this is the single idempotent install-or-update script; on Linux
+    # it's the lighter home-manager+system-manager switch (install.sh does the
+    # heavier apt/nix bootstrap there).
     ".local/bin/update-config" = {
-      source = if pkgs.stdenv.isDarwin then ./bin/update-config-darwin.sh else ./bin/update-config.sh;
+      source = if isDarwin then ./install-darwin.sh else ./bin/update-config.sh;
       executable = true;
     };
     ".local/bin/ts-ssh" = {
