@@ -21,16 +21,17 @@ in {
   imports = [
     ./modules/programs/git.nix
     ./modules/shell/common.nix
+    ./modules/shell/zsh.nix
   ] ++ lib.optionals (!isDarwin) [
     ./modules/fonts.nix
     ./modules/gnome.nix
     ./modules/programs/zen.nix
     ./modules/programs/vscode.nix
     ./modules/services/tailscale-ssh-probe.nix
+    # bash stays the Ubuntu login shell; zsh (above) is configured identically
+    # so you can chsh into it. On macOS zsh is already the login shell.
     ./modules/shell/bash.nix
     ./modules/linux-desktop.nix
-  ] ++ lib.optionals isDarwin [
-    ./modules/shell/zsh.nix
   ];
 
   home.packages = with pkgs; [
