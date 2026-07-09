@@ -14,7 +14,8 @@
   programs.zoxide.enable = true;
   programs.fzf = {
     enable = true;
+    # zsh is configured on both platforms; bash only on Linux (login shell).
+    enableZshIntegration = true;
     enableBashIntegration = pkgs.stdenv.isLinux;
-    enableZshIntegration = pkgs.stdenv.isDarwin;
   };
 }
