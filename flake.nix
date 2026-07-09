@@ -42,42 +42,61 @@
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # macOS system config (this Mac's analogue of system-manager on Linux).
+    nix-darwin = {
+      url = "github:nix-darwin/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ nixpkgs, home-manager, claude-code-nix, system-manager, solaar, nix-system-graphics, nix-vscode-extensions, ... }:
+  outputs = inputs@{ nixpkgs, home-manager, claude-code-nix, system-manager, solaar, nix-system-graphics, nix-vscode-extensions, nix-darwin, ... }:
     let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs {
+      pkgsFor = system: import nixpkgs {
         inherit system;
         config.allowUnfree = true;
         overlays = [ nix-vscode-extensions.overlays.default ];
       };
 
       # Flake-sourced packages. GL drivers come from /run/opengl-driver
-      # (nix-system-graphics), so no nixGL wrapping is needed.
-      flakePkgs = { home.packages = [
+      # (nix-system-graphics), so no nixGL wrapping is needed on Linux.
+      flakePkgsFor = system: { home.packages = [
         claude-code-nix.packages.${system}.claude-code
       ]; };
 
       # Base config plus host-specific modules (will@<hostname>) where applicable.
-      mkHome = modules: home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = { inherit inputs; };
-        modules = [ ./home.nix flakePkgs ] ++ modules;
+      # isDarwin is passed as a specialArg (available before `pkgs` is, unlike
+      # pkgs.stdenv.isDarwin) so home.nix can safely use it inside `imports`.
+      mkHomeFor = system: modules: home-manager.lib.homeManagerConfiguration {
+        pkgs = pkgsFor system;
+        extraSpecialArgs = {
+          inherit inputs;
+          isDarwin = builtins.match ".*-darwin" system != null;
+        };
+        modules = [ ./home.nix (flakePkgsFor system) ] ++ modules;
       };
+      mkHome = mkHomeFor "x86_64-linux";
     in {
       homeConfigurations = {
         "will" = mkHome [ ];
         "will@will-pc14250" = mkHome [ ./hosts/will-pc14250.nix ];
         "will@persona-0020" = mkHome [ ./hosts/persona-0020.nix ];
+        "will@will-mbp" = mkHomeFor "aarch64-darwin" [ ./hosts/will-mbp.nix ];
       };
 
-      # System-manager config (numtide/system-manager)
+      # System-manager config (numtide/system-manager) — Linux boxes only.
       systemConfigs.default = system-manager.lib.makeSystemConfig {
         modules = [
           nix-system-graphics.systemModules.default
           ./system.nix
         ];
+      };
+
+      # nix-darwin system config — this Mac's analogue of systemConfigs.default.
+      darwinConfigurations."will-mbp" = nix-darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        specialArgs = { inherit inputs; };
+        modules = [ ./darwin/system.nix ];
       };
     };
 }
