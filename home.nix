@@ -85,6 +85,8 @@ in {
 
     uv
 
+    tailscale
+
     # CLI proxy that cuts LLM token use on common dev commands
     rtk
 
