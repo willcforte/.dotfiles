@@ -9,6 +9,16 @@
     # Mesa default covers this Intel/AMD host; replaces per-app nixGL wrapping.
     system-graphics.enable = true;
 
+    # Daemon nix.conf. trusted-users lets `will` accept flake substituters
+    # (e.g. cache.numtide.com) without the "untrusted substituter" warning;
+    # this can only be granted system-wide, not from ~/.config/nix. Keeps the
+    # installer's build-users-group line. install.sh moves any pre-existing
+    # unmanaged /etc/nix/nix.conf aside so system-manager can own it.
+    environment.etc."nix/nix.conf".text = ''
+      build-users-group = nixbld
+      trusted-users = root will
+    '';
+
     # Show asterisks while typing the sudo password.
     # NOTE: sudo ignores any sudoers.d filename containing a ".", so the
     # drop-in must be dot-free. 0440 root:root is required by sudo.
