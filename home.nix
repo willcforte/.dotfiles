@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, isDarwin, ... }:
 let
   dotfiles = "${config.home.homeDirectory}/.dotfiles";
   liveLink = path: config.lib.file.mkOutOfStoreSymlink "${dotfiles}/${path}";
@@ -6,7 +6,7 @@ let
   mkMutableSymlink = path: config.lib.file.mkOutOfStoreSymlink "${mutableConfig}/${path}";
 in {
   home.username = "will";
-  home.homeDirectory = "/home/will";
+  home.homeDirectory = if isDarwin then "/Users/will" else "/home/will";
 
   home.stateVersion = "25.05";
 
@@ -14,17 +14,24 @@ in {
   # self-updating binary on PATH declaratively.
   home.sessionPath = [ "$HOME/.pixi/bin" ];
 
-  # Suppress the notify-send "N unread news items" popup on activation.
+  # Suppress the notify-send "N unread news items" popup on activation. No-op
+  # on Darwin (notify-send doesn't exist there).
   news.display = "silent";
 
   imports = [
+    ./modules/programs/git.nix
+    ./modules/shell/common.nix
+    ./modules/shell/zsh.nix
+  ] ++ lib.optionals (!isDarwin) [
     ./modules/fonts.nix
     ./modules/gnome.nix
     ./modules/programs/zen.nix
     ./modules/programs/vscode.nix
-    ./modules/programs/git.nix
-    ./modules/shell/bash.nix
     ./modules/services/tailscale-ssh-probe.nix
+    # bash stays the Ubuntu login shell; zsh (above) is configured identically
+    # so you can chsh into it. On macOS zsh is already the login shell.
+    ./modules/shell/bash.nix
+    ./modules/linux-desktop.nix
   ];
 
   home.packages = with pkgs; [
@@ -35,9 +42,6 @@ in {
     tree
     lazygit
     lazydocker
-    gearlever
-    pinta
-    solaar
     jujutsu
     lazyjj
 
@@ -88,14 +92,6 @@ in {
     wezterm
 
     nodejs
-
-    # GUI apps (formerly flatpak/snap/apt). GL via /run/opengl-driver
-    # (nix-system-graphics) — no nixGL wrapping needed.
-    obsidian
-    slack
-    vlc
-    flameshot
-    gimp
   ];
 
   # Symlinks to dotfiles
@@ -106,8 +102,11 @@ in {
       source = ./bin/gnome-settings-export;
       executable = true;
     };
+    # Single idempotent install-or-update script per platform: installs missing
+    # prereqs then applies the flake config. Same command (`update-config`) on
+    # both; guarded so routine updates skip the heavy/sudo bits.
     ".local/bin/update-config" = {
-      source = ./bin/update-config.sh;
+      source = if isDarwin then ./install-darwin.sh else ./install.sh;
       executable = true;
     };
     ".local/bin/ts-ssh" = {
@@ -115,16 +114,7 @@ in {
       executable = true;
     };
     ".claude/LESSONS.md".source = mkMutableSymlink "LESSONS.md";
-
-    # Zen reads user.js from the legacy ~/.zen profile (not the module's XDG
-    # ~/.config/zen). Profile dir id is host-specific; inert on other hosts.
-    ".zen/8923kzk4.Default (release)/user.js".text = ''
-      user_pref("cookiebanners.service.mode", 2);
-    '';
   };
-
-  # so GNOME finds GUI apps & icons
-  targets.genericLinux.enable = true;
 
   programs.home-manager.enable = true;
 }
