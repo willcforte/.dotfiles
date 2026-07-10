@@ -85,6 +85,21 @@ export PATH="$HOME/.nix-profile/bin:$PATH"
 #    only exists after the first activation, so fall back to `nix run nix-darwin`
 #    to bootstrap it. The activation step self-escalates and prompts for sudo.
 #-----------------------------------------------------------
+# First activation only: nix-darwin refuses to overwrite pre-existing *real*
+# /etc files it manages. The plain Nix installer writes /etc/zshrc, /etc/bashrc,
+# etc. with content nix-darwin doesn't recognize, which aborts activation with
+# "Unexpected files in /etc". Move any such files aside to *.before-nix-darwin
+# (only if not already a symlink and not already backed up); nix-darwin then
+# recreates them. Skipped once darwin-rebuild exists (i.e. after first switch).
+if ! command -v darwin-rebuild >/dev/null 2>&1; then
+  for f in /etc/zshrc /etc/bashrc /etc/zprofile /etc/zshenv; do
+    if [ -f "$f" ] && [ ! -L "$f" ] && [ ! -e "$f.before-nix-darwin" ]; then
+      echo "==> Moving aside pre-existing $f (nix-darwin will recreate it)"
+      sudo mv "$f" "$f.before-nix-darwin"
+    fi
+  done
+fi
+
 echo "==> Applying nix-darwin configuration"
 if command -v darwin-rebuild >/dev/null 2>&1; then
   darwin-rebuild switch --flake "$DOTFILES#will-mbp"
