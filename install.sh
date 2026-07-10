@@ -88,6 +88,14 @@ export PATH="$HOME/.nix-profile/bin:$PATH"
 #    so it prompts for the sudo password.
 #-----------------------------------------------------------
 echo "==> Applying system-manager configuration"
+# system-manager refuses to overwrite an /etc file it does not already own.
+# The Nix installer's /etc/nix/nix.conf is such a file; move it aside on the
+# first run so system-manager can take over. Idempotent: once system-manager
+# owns it, the file carries our trusted-users line and this is skipped.
+if [ -f /etc/nix/nix.conf ] && ! grep -q '^trusted-users' /etc/nix/nix.conf; then
+  echo "==> Moving pre-existing /etc/nix/nix.conf aside for system-manager"
+  sudo mv /etc/nix/nix.conf /etc/nix/nix.conf.pre-system-manager
+fi
 nix run 'github:numtide/system-manager' -- switch --flake "$DOTFILES" --sudo
 
 #-----------------------------------------------------------
