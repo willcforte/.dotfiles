@@ -44,25 +44,8 @@
       # auto-open from VSCode via remote.SSH.path). See bin/ts-ssh.sh.
       ssh() { "$HOME/.local/bin/ts-ssh" "$@"; }
 
-      # pixi autocompletion
-      eval "$(pixi completion --shell bash)"
+      # pixi autocompletion (guarded: pixi is installed out-of-band, may be absent)
+      command -v pixi >/dev/null && eval "$(pixi completion --shell bash)"
     '';
-  };
-
-  # Shell integrations
-  programs.starship = {
-    enable = true;
-    settings.hostname = {
-      ssh_only = false;
-      aliases = {
-        "persona-0020" = "p20";
-        "will-pc14250" = "wpc";
-      };
-    };
-  };
-  programs.zoxide.enable = true;
-  programs.fzf = {
-    enable = true;
-    enableBashIntegration = true;
   };
 }
