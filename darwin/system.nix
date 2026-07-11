@@ -19,6 +19,10 @@
   # `cleanup = "zap"` on this first pass — that uninstalls anything not
   # declared here, which is too aggressive for a fresh box Will may also
   # install casks on by hand.
+  system.activationScripts.postActivation.text = ''
+    pmset -a displaysleep 0
+  '';
+
   homebrew = {
     enable = true;
     onActivation.autoUpdate = true;
