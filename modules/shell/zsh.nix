@@ -42,7 +42,11 @@
       # pixi autocompletion (guarded: pixi is installed out-of-band, may be absent)
       command -v pixi >/dev/null && eval "$(pixi completion --shell zsh)"
     ''
-    + (if isDarwin then "" else ''
+    + (if isDarwin then ''
+
+      # Homebrew (Apple Silicon)
+      [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+    '' else ''
 
       # Tailscale SSH re-auth: route ssh through the ts-ssh wrapper, which
       # surfaces the "additional check" login URL (Linux desktop only).
