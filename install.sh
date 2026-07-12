@@ -84,6 +84,15 @@ fi
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
 #-----------------------------------------------------------
+# 4b. Switch login shell to zsh (idempotent).
+#-----------------------------------------------------------
+if [ "$SHELL" != "/usr/bin/zsh" ]; then
+  echo "==> Switching login shell to zsh"
+  grep -qxF '/usr/bin/zsh' /etc/shells || echo '/usr/bin/zsh' | sudo tee -a /etc/shells >/dev/null
+  sudo chsh -s /usr/bin/zsh "$USER"
+fi
+
+#-----------------------------------------------------------
 # 5. Apply system-manager (system /etc, systemd). Self-escalates via --sudo,
 #    so it prompts for the sudo password.
 #-----------------------------------------------------------

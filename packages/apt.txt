@@ -8,6 +8,7 @@ build-essential
 # Dev / shell utilities
 cron
 unzip
+zsh
 
 # Python
 python3-full

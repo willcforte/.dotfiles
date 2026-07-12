@@ -28,9 +28,6 @@ in {
     ./modules/programs/zen.nix
     ./modules/programs/vscode.nix
     ./modules/services/tailscale-ssh-probe.nix
-    # bash stays the Ubuntu login shell; zsh (above) is configured identically
-    # so you can chsh into it. On macOS zsh is already the login shell.
-    ./modules/shell/bash.nix
     ./modules/services/nix-flake-autoupdate.nix
     ./modules/linux-desktop.nix
   ];

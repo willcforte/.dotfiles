@@ -1,5 +1,5 @@
 { pkgs, ... }: {
-  # Shell integrations shared by bash (Linux) and zsh (Darwin).
+  # Shell integrations shared across platforms (zsh on both Linux and Darwin).
   programs.starship = {
     enable = true;
     settings.hostname = {
@@ -14,8 +14,6 @@
   programs.zoxide.enable = true;
   programs.fzf = {
     enable = true;
-    # zsh is configured on both platforms; bash only on Linux (login shell).
     enableZshIntegration = true;
-    enableBashIntegration = pkgs.stdenv.isLinux;
   };
 }
