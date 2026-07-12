@@ -1,6 +1,5 @@
-# Cross-platform zsh config, shared by Linux and Darwin. On macOS zsh is the
-# native login shell; on Ubuntu bash stays the login shell (see bash.nix) but
-# this configures an identical zsh you can `chsh -s $(which zsh)` into.
+# Cross-platform zsh config, shared by Linux and Darwin. zsh is the login shell
+# on both platforms (install.sh chsh's Ubuntu to /usr/bin/zsh on first run).
 # Machine-specific lines and secrets go in ~/.zshrc.local instead.
 { isDarwin, ... }: {
   programs.zsh = {
