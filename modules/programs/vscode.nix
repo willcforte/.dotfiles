@@ -69,6 +69,7 @@ in {
         tailscale.vscode-tailscale
         tamasfe.even-better-toml
         tomoki1207.pdf
+	changwang.copy-file-path-with-range
       ];
     };
   };
