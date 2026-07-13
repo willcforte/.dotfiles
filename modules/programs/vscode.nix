@@ -91,4 +91,17 @@ in {
       cp --no-preserve=mode "$_base" "$_settings"
     fi
   '';
+
+  # Trusted domains (link-open confirmation for e.g. terminal links) aren't a
+  # settings.json key — VS Code stores them in the application-state SQLite DB
+  # under key http.linkProtectionTrustedDomains. Upsert "*" so all domains are
+  # trusted and the confirmation prompt never appears.
+  home.activation.vscodeTrustedDomains = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    _db="$HOME/.config/Code/User/globalStorage/state.vscdb"
+    if [ -f "$_db" ]; then
+      ${pkgs.sqlite}/bin/sqlite3 "$_db" \
+        "INSERT INTO ItemTable (key, value) VALUES ('http.linkProtectionTrustedDomains', '[\"*\"]')
+         ON CONFLICT(key) DO UPDATE SET value=excluded.value;"
+    fi
+  '';
 }
