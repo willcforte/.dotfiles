@@ -90,8 +90,8 @@ in {
       _clean=$(python3 -c "
 import json, re, sys
 t = open(sys.argv[1]).read()
-t = re.sub(r'//[^\n]*', '', t)
-t = re.sub(r'/\*.*?\*/', '', t, flags=re.DOTALL)
+t = re.sub(r'//[^\n]*', "", t)
+t = re.sub(r'/\*.*?\*/', "", t, flags=re.DOTALL)
 t = re.sub(r',(\s*[}\]])', r'\1', t)
 print(json.dumps(json.loads(t)))
 " "$_settings" 2>/dev/null)

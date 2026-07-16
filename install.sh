@@ -11,6 +11,11 @@
 # their sudo prompts, on routine config updates when nothing is missing.
 set -euo pipefail
 
+if [[ "$(uname)" != "Linux" ]]; then
+  echo "install.sh is for Ubuntu/Linux only. On macOS run install-darwin.sh instead." >&2
+  exit 1
+fi
+
 # Hardcoded (not derived from $BASH_SOURCE) so it works the same whether run
 # from the repo or via the ~/.local/bin/update-config symlink.
 DOTFILES="$HOME/.dotfiles"
