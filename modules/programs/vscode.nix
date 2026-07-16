@@ -107,6 +107,18 @@ print(json.dumps(json.loads(t)))
     fi
   '';
 
+  # The mutableExtensionsDir path only regenerates extensions.json via an
+  # onChange hook when the immutable extension set *changes*. A reinstall that
+  # produces an identical set leaves a stale/clobbered extensions.json, so VS
+  # Code loads only whatever few entries survived. Remove the manifest on every
+  # activation; VS Code rebuilds it from the full extensions dir (Nix symlinks +
+  # ad-hoc GUI installs) on next launch.
+  home.activation.vscodeExtensionsManifest =
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      rm -f "$HOME/.vscode/extensions/extensions.json" \
+            "$HOME/.vscode/extensions/.init-default-profile-extensions"
+    '';
+
   # Trusted domains (link-open confirmation for e.g. terminal links) aren't a
   # settings.json key — VS Code stores them in the application-state SQLite DB
   # under key http.linkProtectionTrustedDomains. Upsert "*" so all domains are
