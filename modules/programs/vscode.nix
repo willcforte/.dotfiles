@@ -22,6 +22,9 @@ let
     "terminal.integrated.enableVisualBell" = true;
     "remote.SSH.path" = "/home/will/.local/bin/ts-ssh";
     "remote.SSH.connectTimeout" = 60;
+    "files.associations" = {
+      "justfile" = "makefile";
+    };
   });
 in {
   # VS Code. Extensions come from the nix-vscode-extensions marketplace overlay

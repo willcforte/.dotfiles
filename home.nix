@@ -66,6 +66,7 @@ in {
     ripgrep
     ripgrep-all
     procs
+    just
 
     # Structural code search/rewrite (AST patterns) + YAML processor (jq for YAML)
     ast-grep
