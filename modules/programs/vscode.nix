@@ -85,8 +85,22 @@ in {
     mkdir -p "$_cfg"
     cp --no-preserve=mode --remove-destination "$_base" "$_cfg/.nix-settings-base.json"
     if [ -f "$_settings" ] && [ ! -L "$_settings" ]; then
-      ${pkgs.jq}/bin/jq -s '.[0] * .[1]' "$_settings" "$_base" > "$_settings.tmp"
-      mv "$_settings.tmp" "$_settings"
+      # VSCode writes JSONC (trailing commas, // comments); strip those before
+      # merging so jq can parse it. python3 is always present on Ubuntu.
+      _clean=$(python3 -c "
+import json, re, sys
+t = open(sys.argv[1]).read()
+t = re.sub(r'//[^\n]*', '', t)
+t = re.sub(r'/\*.*?\*/', '', t, flags=re.DOTALL)
+t = re.sub(r',(\s*[}\]])', r'\1', t)
+print(json.dumps(json.loads(t)))
+" "$_settings" 2>/dev/null)
+      if [ -n "$_clean" ]; then
+        echo "$_clean" | ${pkgs.jq}/bin/jq -s '.[0] * .[1]' - "$_base" > "$_settings.tmp"
+        mv "$_settings.tmp" "$_settings"
+      else
+        cp --no-preserve=mode "$_base" "$_settings"
+      fi
     else
       rm -f "$_settings"
       cp --no-preserve=mode "$_base" "$_settings"

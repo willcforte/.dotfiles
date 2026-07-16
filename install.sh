@@ -84,12 +84,17 @@ fi
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
 #-----------------------------------------------------------
-# 4b. Switch login shell to zsh (idempotent).
+# 4b. Register nix zsh in /etc/shells and set it as the login shell.
+#     usermod avoids an interactive password prompt (unlike chsh).
 #-----------------------------------------------------------
-if [ "$SHELL" != "/usr/bin/zsh" ]; then
-  echo "==> Switching login shell to zsh"
-  grep -qxF '/usr/bin/zsh' /etc/shells || echo '/usr/bin/zsh' | sudo tee -a /etc/shells >/dev/null
-  sudo chsh -s /usr/bin/zsh "$USER"
+ZSH_PATH="$(command -v zsh)"
+if ! grep -qxF "$ZSH_PATH" /etc/shells 2>/dev/null; then
+  echo "==> Adding $ZSH_PATH to /etc/shells"
+  echo "$ZSH_PATH" | sudo tee -a /etc/shells >/dev/null
+fi
+if [ "$(getent passwd "$USER" | cut -d: -f7)" != "$ZSH_PATH" ]; then
+  echo "==> Setting login shell to $ZSH_PATH"
+  sudo usermod -s "$ZSH_PATH" "$USER"
 fi
 
 #-----------------------------------------------------------

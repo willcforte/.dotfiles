@@ -28,6 +28,9 @@ in {
     ./modules/programs/zen.nix
     ./modules/programs/vscode.nix
     ./modules/services/tailscale-ssh-probe.nix
+    # bash.nix keeps bash functional on Ubuntu (e.g. for scripts that source
+    # ~/.bashrc). install.sh sets zsh as the actual login shell via usermod.
+    ./modules/shell/bash.nix
     ./modules/services/nix-flake-autoupdate.nix
     ./modules/linux-desktop.nix
   ];
