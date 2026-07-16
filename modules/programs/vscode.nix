@@ -3,7 +3,12 @@ let
   # Base VSCode settings stored in the Nix store; home.activation.vscodeSettings
   # writes a writable copy to ~/.config/Code/User/settings.json and merges any
   # extra keys VSCode wrote (e.g. extension popups). Nix wins on key conflicts.
-  vscodeBaseSettings = pkgs.writeText "vscode-nix-settings.json" (builtins.toJSON {
+  #
+  # Settings Sync (sync.enable=true) periodically overwrites settings.json with
+  # the cloud copy shortly after activation, clobbering any nix-managed key not
+  # present there. Listing every nix-managed key in settingsSync.ignoredSettings
+  # makes Settings Sync treat them as local-only, so it leaves them alone.
+  vscodeManagedSettings = {
     "editor.fontSize" = 24;
     "editor.fontFamily" = "'Iosevka Nerd Font', monospace";
     "workbench.colorTheme" = "Gruvbox Light Hard";
@@ -25,7 +30,11 @@ let
     "files.associations" = {
       "justfile" = "makefile";
     };
-  });
+  };
+  vscodeBaseSettings = pkgs.writeText "vscode-nix-settings.json" (builtins.toJSON
+    (vscodeManagedSettings // {
+      "settingsSync.ignoredSettings" = builtins.attrNames vscodeManagedSettings;
+    }));
 in {
   # VS Code. Extensions come from the nix-vscode-extensions marketplace overlay
   # (works because this is the official MS build on FHS Ubuntu). Settings are
