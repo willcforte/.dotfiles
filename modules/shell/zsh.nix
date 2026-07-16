@@ -1,6 +1,7 @@
 # Cross-platform zsh config, shared by Linux and Darwin. zsh is the login shell
-# on both platforms (install.sh chsh's Ubuntu to /usr/bin/zsh on first run).
-# Machine-specific lines and secrets go in ~/.zshrc.local instead.
+# on both platforms; install.sh registers the nix zsh in /etc/shells and sets
+# it via usermod on Ubuntu. Machine-specific lines and secrets go in
+# ~/.zshrc.local instead.
 { isDarwin, ... }: {
   programs.zsh = {
     enable = true;
