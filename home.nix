@@ -12,7 +12,7 @@ in {
 
   # pixi installed via official installer (PIXI_NO_PATH_UPDATE=1); keep its
   # self-updating binary on PATH declaratively.
-  home.sessionPath = [ "$HOME/.pixi/bin" ];
+  home.sessionPath = [ "$HOME/.pixi/bin" "$HOME/.npm-global/bin" ];
 
   # Suppress the notify-send "N unread news items" popup on activation. No-op
   # on Darwin (notify-send doesn't exist there).
@@ -97,6 +97,15 @@ in {
 
     nodejs
   ];
+
+  # Linear CLI (schpet/linear-cli) isn't in nixpkgs; install it globally via
+  # npm (nodejs already declared above) on each activation so it stays current.
+  # npm's default global prefix is the read-only nodejs store path, so point
+  # it at a writable directory in $HOME instead. --allow-scripts is required
+  # because the package's postinstall downloads the actual binary release.
+  home.activation.linearCli = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run env PATH="${pkgs.nodejs}/bin:${pkgs.gnutar}/bin:${pkgs.xz}/bin:$PATH" ${pkgs.nodejs}/bin/npm install -g --prefix "$HOME/.npm-global" --allow-scripts=@schpet/linear-cli @schpet/linear-cli
+  '';
 
   # Symlinks to dotfiles
   home.file = {
