@@ -18,6 +18,14 @@
       user.name = "Will C. Forte";
       user.email = "willcforte@gmail.com";
       aliases.bl = [ "bookmark" "list" "--all-remotes" ];
+      aliases.resync = [
+        "rebase"
+        "-s"
+        "roots(trunk()..@)"
+        "-d"
+        "trunk()"
+        "--ignore-immutable"
+      ];
       revsets.log = "@ | bookmarks() | remote_bookmarks() | trunk()";
     };
   };
