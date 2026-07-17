@@ -24,6 +24,18 @@
       plugins = [ "git" ] ++ (if isDarwin then [ "macos" ] else [ ]);
       theme = ""; # starship (modules/shell/common.nix) owns the prompt
     };
+    envExtra = ''
+      # Unconditional (unlike home.sessionPath's hm-session-vars.sh, which is
+      # guarded by __HM_SESS_VARS_SOURCED and gets skipped in shells that
+      # inherit that guard var from a parent process without inheriting PATH,
+      # e.g. some agent-spawned subshells).
+      export PATH="$HOME/.npm-global/bin:$PATH"
+
+      # Machine-specific config and secrets (not in dotfiles repo). Sourced from
+      # .zshenv (not initContent/.zshrc) so it's available to non-interactive
+      # shells too, e.g. tool-invoked scripts and agent subshells.
+      [ -f "$HOME/.zshrc.local" ] && . "$HOME/.zshrc.local"
+    '';
     initContent = ''
       export PATH="$HOME/.local/bin:$PATH"
 
@@ -36,9 +48,6 @@
 
       # git helpers: gpush/gpull/gcom/gcpp (see ~/.claude/scripts/gq-shell.sh)
       [ -f "$HOME/.claude/scripts/gq-shell.sh" ] && . "$HOME/.claude/scripts/gq-shell.sh"
-
-      # Machine-specific config and secrets (not in dotfiles repo)
-      [ -f "$HOME/.zshrc.local" ] && . "$HOME/.zshrc.local"
 
       # pixi autocompletion (guarded: pixi is installed out-of-band, may be absent)
       command -v pixi >/dev/null && eval "$(pixi completion --shell zsh)"

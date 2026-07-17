@@ -124,6 +124,11 @@ in {
   # because the package's postinstall downloads the actual binary release.
   home.activation.linearCli = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     run env PATH="${pkgs.nodejs}/bin:${pkgs.gnutar}/bin:${pkgs.xz}/bin:$PATH" ${pkgs.nodejs}/bin/npm install -g --prefix "$HOME/.npm-global" --allow-scripts=@schpet/linear-cli @schpet/linear-cli
+
+    # Also symlink into ~/.local/bin, which is on PATH even in shells that
+    # don't source .zshenv/.zshrc (e.g. sandboxed non-interactive tool shells).
+    run mkdir -p "$HOME/.local/bin"
+    run ln -sf "$HOME/.npm-global/bin/linear" "$HOME/.local/bin/linear"
   '';
 
   # Symlinks to dotfiles
