@@ -21,4 +21,10 @@
 
   # so GNOME finds GUI apps & icons
   targets.genericLinux.enable = true;
+
+  # nix-system-graphics (system-manager) owns /run/opengl-driver, so disable
+  # home-manager's own non-NixOS GPU management — otherwise its activation
+  # check compares that symlink against its own driver path, never matches,
+  # and nags "GPU drivers require an update" on every switch.
+  targets.genericLinux.gpu.enable = false;
 }
