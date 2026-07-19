@@ -87,6 +87,7 @@ else
   nix run home-manager/master -- switch -b backup --flake "$DOTFILES"
 fi
 export PATH="$HOME/.nix-profile/bin:$PATH"
+nix-collect-garbage -d
 
 #-----------------------------------------------------------
 # 4b. Register nix zsh in /etc/shells and set it as the login shell.
