@@ -1,5 +1,17 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 let
+  berkeley-mono = pkgs.stdenvNoCC.mkDerivation {
+    pname = "berkeley-mono";
+    version = "2.004";
+    src = inputs.dotfiles-private;
+    installPhase = ''
+      runHook preInstall
+      install -Dm644 fonts/BerkeleyMonoVariable.ttf -t $out/share/fonts/truetype
+      runHook postInstall
+    '';
+    meta.description = "Berkeley Mono Variable";
+  };
+
   # SF Pro is proprietary (Apple) and not in nixpkgs; build from the upstream
   # repo of .otf/.ttf files. Bump rev+hash with nix-prefetch-github.
   sf-pro-fonts = pkgs.stdenvNoCC.mkDerivation {
@@ -22,6 +34,7 @@ let
 in {
   home.packages = [
     sf-pro-fonts                                    # SF Pro Display / Text (GNOME)
+    berkeley-mono                                   # Berkeley Mono Variable (wezterm)
     pkgs.nerd-fonts.iosevka                         # "Iosevka Nerd Font" (VSCode)
     (pkgs.iosevka-bin.override { variant = "SGr-IosevkaTermSS18"; })  # IosevkaTerm SS18 (GNOME mono)
   ];

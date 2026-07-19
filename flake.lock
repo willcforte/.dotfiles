@@ -19,6 +19,22 @@
         "type": "github"
       }
     },
+    "dotfiles-private": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784502321,
+        "narHash": "sha256-/mfS842sUdeIfXHuf7smRVh3wkSFFMURxcCYh6xmmgg=",
+        "ref": "refs/heads/main",
+        "rev": "c02e8a7aaa7e0b7b6bee53a7e17fc0be9e446cfa",
+        "revCount": 1,
+        "type": "git",
+        "url": "https://github.com/willcforte/.dotfiles-private"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/willcforte/.dotfiles-private"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -261,6 +277,7 @@
     "root": {
       "inputs": {
         "claude-code-nix": "claude-code-nix",
+        "dotfiles-private": "dotfiles-private",
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nix-system-graphics": "nix-system-graphics",

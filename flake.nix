@@ -43,6 +43,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Private assets, fetched as a plain source tree (consumed by modules).
+    dotfiles-private = {
+      url = "git+https://github.com/willcforte/.dotfiles-private";
+      flake = false;
+    };
+
     # macOS system config (this Mac's analogue of system-manager on Linux).
     # Pinned to a commit contemporaneous with the nixpkgs pin: nix-darwin master
     # later started passing `--sidebar-depth` to nixos-render-docs, which our

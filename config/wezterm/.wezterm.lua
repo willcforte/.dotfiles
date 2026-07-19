@@ -2,7 +2,11 @@ local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 
 config.color_scheme = 'GruvboxLight'
-config.font = wezterm.font 'Iosevka Term SS18'
+local is_mac = wezterm.target_triple:find('apple') ~= nil
+config.font = wezterm.font('Berkeley Mono Variable', {
+  weight = is_mac and 375 or 'Medium',
+  stretch = 'Condensed',
+})
 config.font_size = 18
 config.initial_cols = 100
 config.initial_rows = 24
