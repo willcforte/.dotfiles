@@ -3,11 +3,32 @@ local config = wezterm.config_builder()
 
 config.color_scheme = 'GruvboxLight'
 local is_mac = wezterm.target_triple:find('apple') ~= nil
+local regular_weight = is_mac and 375 or 'Medium'
+
+-- Load this font straight from its file rather than via the system
+-- fontconfig lookup: fontconfig mis-resolves this font's named instances at
+-- the default (non-condensed) width, silently landing on an oblique cut
+-- for supposedly-upright text. Pointing font_dirs at it makes WezTerm use
+-- its own internal font scanner instead, which resolves the same file
+-- correctly.
+config.font_dirs = { wezterm.home_dir .. '/.nix-profile/share/fonts/truetype' }
 config.font = wezterm.font('Berkeley Mono Variable', {
-  weight = is_mac and 375 or 'Medium',
-  stretch = 'Condensed',
+  weight = regular_weight,
 })
 config.font_size = 18
+
+config.font_rules = {
+  {
+    intensity = 'Bold',
+    italic = false,
+    font = wezterm.font('Berkeley Mono Variable', { weight = 'Bold' }),
+  },
+  {
+    intensity = 'Half',
+    italic = false,
+    font = wezterm.font('Berkeley Mono Variable', { weight = regular_weight }),
+  },
+}
 config.initial_cols = 100
 config.initial_rows = 24
 
