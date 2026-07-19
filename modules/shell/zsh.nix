@@ -7,6 +7,7 @@
     enable = true;
     shellAliases = {
       ccode = "claude --system-prompt \"\"";
+      gearlever = "flatpak run it.mijorus.gearlever";
       #ccbare = "claude --bare";
       # BSD ls (macOS) uses -G for colour; GNU ls (Linux) uses --color=auto.
       ls = if isDarwin then "ls -G" else "ls --color=auto";
