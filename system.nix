@@ -27,6 +27,14 @@
       mode = "0440";
     };
 
+    # Unattended-upgrades: append the regular -updates pocket to the default
+    # -security set. Uses apt's `::` list-append so it stays additive and does
+    # not clobber dpkg's base /etc/apt/apt.conf.d/50unattended-upgrades.
+    # Automatic-Reboot is left at its default (false); reboot on your schedule.
+    environment.etc."apt/apt.conf.d/52unattended-upgrades-local".text = ''
+      Unattended-Upgrade::Allowed-Origins:: "''${distro_id}:''${distro_codename}-updates";
+    '';
+
     environment.etc."udev/rules.d/42-logitech-unify-permissions.rules".text = ''
       # This rule was added by Solaar.
       #
