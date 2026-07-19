@@ -98,6 +98,20 @@ in {
     nodejs
   ];
 
+  # If claude-usage-bar is installed (not managed by Nix), register it as an
+  # autostart entry so it launches on login. Conditional on the binary existing
+  # so this is a no-op on macOS and machines where it hasn't been installed.
+  home.activation.claudeUsageBarAutostart = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if command -v claude-usage-bar >/dev/null 2>&1; then
+      mkdir -p "$HOME/.config/autostart"
+      dst="$HOME/.config/autostart/claude-usage-bar.desktop"
+      src="/usr/share/applications/claude-usage-bar.desktop"
+      if [ -f "$src" ] && [ ! -e "$dst" ]; then
+        cp "$src" "$dst"
+      fi
+    fi
+  '';
+
   # Linear CLI (schpet/linear-cli) isn't in nixpkgs; install it globally via
   # npm (nodejs already declared above) on each activation so it stays current.
   # npm's default global prefix is the read-only nodejs store path, so point
