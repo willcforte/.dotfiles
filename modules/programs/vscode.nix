@@ -98,12 +98,41 @@ in {
     cp --no-preserve=mode --remove-destination "$_base" "$_cfg/.nix-settings-base.json"
     if [ -f "$_settings" ] && [ ! -L "$_settings" ]; then
       # VSCode writes JSONC (trailing commas, // comments); strip those before
-      # merging so jq can parse it. python3 is always present on Ubuntu.
-      _clean=$(python3 -c "
+      # merging so jq can parse it. Activation's PATH is nix-only, so python3
+      # must be referenced by store path, not looked up on PATH.
+      # Comment stripping is string-aware (tracks in_str) so it doesn't treat
+      # glob patterns like "*/.yml" or "**/foo" inside string values as
+      # comment delimiters.
+      _clean=$(${pkgs.python3}/bin/python3 -c "
 import json, re, sys
+def strip_comments(t):
+    out = []
+    i = 0
+    n = len(t)
+    in_str = False
+    while i < n:
+        c = t[i]
+        if in_str:
+            out.append(c)
+            if c == \"\\\\\" and i + 1 < n:
+                out.append(t[i+1]); i += 2; continue
+            if c == \"\\\"\":
+                in_str = False
+            i += 1; continue
+        if c == \"\\\"\":
+            in_str = True; out.append(c); i += 1; continue
+        if c == \"/\" and i + 1 < n and t[i+1] == \"/\":
+            while i < n and t[i] != \"\n\": i += 1
+            continue
+        if c == \"/\" and i + 1 < n and t[i+1] == \"*\":
+            i += 2
+            while i + 1 < n and not (t[i] == \"*\" and t[i+1] == \"/\"): i += 1
+            i += 2
+            continue
+        out.append(c); i += 1
+    return \"\".join(out)
 t = open(sys.argv[1]).read()
-t = re.sub(r'//[^\n]*', "", t)
-t = re.sub(r'/\*.*?\*/', "", t, flags=re.DOTALL)
+t = strip_comments(t)
 t = re.sub(r',(\s*[}\]])', r'\1', t)
 print(json.dumps(json.loads(t)))
 " "$_settings" 2>/dev/null)
