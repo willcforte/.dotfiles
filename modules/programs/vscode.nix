@@ -123,8 +123,12 @@ print(json.dumps(json.loads(t)))
   # home-manager's own extension-symlinking activation script fails its first
   # `ln -s` with "No such file or directory" (whichever extension it hits
   # first, e.g. rust-lang.rust-analyzer). Pre-create the dir so that's silent.
+  # A machine previously on immutableExtensionsDir may still have
+  # ~/.vscode/extensions as a symlink into the Nix store; mkdir -p errors on
+  # that stray non-directory entry, so clear it first.
   home.activation.vscodeExtensionsDir =
     lib.hm.dag.entryBefore [ "installPackages" ] ''
+      [ -d "$HOME/.vscode/extensions" ] || rm -f "$HOME/.vscode/extensions"
       mkdir -p "$HOME/.vscode/extensions"
     '';
 
