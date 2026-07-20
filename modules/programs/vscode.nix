@@ -119,6 +119,15 @@ print(json.dumps(json.loads(t)))
     fi
   '';
 
+  # On a fresh machine ~/.vscode/extensions doesn't exist yet, so
+  # home-manager's own extension-symlinking activation script fails its first
+  # `ln -s` with "No such file or directory" (whichever extension it hits
+  # first, e.g. rust-lang.rust-analyzer). Pre-create the dir so that's silent.
+  home.activation.vscodeExtensionsDir =
+    lib.hm.dag.entryBefore [ "installPackages" ] ''
+      mkdir -p "$HOME/.vscode/extensions"
+    '';
+
   # The mutableExtensionsDir path only regenerates extensions.json via an
   # onChange hook when the immutable extension set *changes*. A reinstall that
   # produces an identical set leaves a stale/clobbered extensions.json, so VS
