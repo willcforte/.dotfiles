@@ -128,7 +128,9 @@ print(json.dumps(json.loads(t)))
   # that stray non-directory entry, so clear it first.
   home.activation.vscodeExtensionsDir =
     lib.hm.dag.entryBefore [ "installPackages" ] ''
-      [ -d "$HOME/.vscode/extensions" ] || rm -f "$HOME/.vscode/extensions"
+      if [ -L "$HOME/.vscode/extensions" ]; then
+        rm -f "$HOME/.vscode/extensions"
+      fi
       mkdir -p "$HOME/.vscode/extensions"
     '';
 
