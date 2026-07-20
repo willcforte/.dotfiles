@@ -14,6 +14,11 @@ in {
   # self-updating binary on PATH declaratively.
   home.sessionPath = [ "$HOME/.pixi/bin" "$HOME/.npm-global/bin" ];
 
+  # npm's default global prefix is the read-only nodejs store path, so a bare
+  # `npm install -g` (e.g. from Claude Code plugin hooks) fails with EACCES.
+  # Point it at a writable directory in $HOME instead.
+  home.sessionVariables.NPM_CONFIG_PREFIX = "$HOME/.npm-global";
+
   # Suppress the notify-send "N unread news items" popup on activation. No-op
   # on Darwin (notify-send doesn't exist there).
   news.display = "silent";
