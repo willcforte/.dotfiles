@@ -26,6 +26,19 @@
         "trunk()"
         "--ignore-immutable"
       ];
+      aliases.commit-with-checks = [
+        "util"
+        "exec"
+        "--"
+        "bash"
+        "-c"
+        ''
+          set -euo pipefail
+          jj fix -s @
+          jj describe "$@"
+        ''
+        ""
+      ];
       revsets.log = "@ | bookmarks() | remote_bookmarks() | trunk()";
     };
   };
