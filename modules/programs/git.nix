@@ -36,6 +36,7 @@
           set -euo pipefail
           jj fix -s @
           jj describe "$@"
+          jj new
         ''
         ""
       ];
