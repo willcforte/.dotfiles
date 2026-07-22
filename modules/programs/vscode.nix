@@ -1,46 +1,9 @@
 { pkgs, lib, ... }:
-let
-  # Base VSCode settings stored in the Nix store; home.activation.vscodeSettings
-  # writes a writable copy to ~/.config/Code/User/settings.json and merges any
-  # extra keys VSCode wrote (e.g. extension popups). Nix wins on key conflicts.
-  #
-  # Settings Sync (sync.enable=true) periodically overwrites settings.json with
-  # the cloud copy shortly after activation, clobbering any nix-managed key not
-  # present there. Listing every nix-managed key in settingsSync.ignoredSettings
-  # makes Settings Sync treat them as local-only, so it leaves them alone.
-  vscodeManagedSettings = {
-    "editor.fontSize" = 24;
-    "editor.fontFamily" = "'Iosevka Nerd Font', monospace";
-    "workbench.colorTheme" = "Gruvbox Light Hard";
-    "workbench.startupEditor" = "none";
-    "editor.codeActionsOnSave" = [ "source.organizeImports" ];
-    "editor.formatOnSave" = true;
-    "rust-analyzer.imports.granularity.group" = "module";
-    "claudeCode.useTerminal" = true;
-    "chat.disableAIFeatures" = true;
-    "workbench.secondarySideBar.defaultVisibility" = "hidden";
-    "terminal.integrated.fontSize" = 22;
-    "security.workspace.trust.enabled" = false;
-    "accessibility.signals.terminalBell" = { "sound" = "on"; };
-    "makefile.configureOnOpen" = true;
-    "terminal.integrated.enableBell" = true;
-    "terminal.integrated.enableVisualBell" = true;
-    "remote.SSH.path" = "/home/will/.local/bin/ts-ssh";
-    "remote.SSH.connectTimeout" = 60;
-    "files.associations" = {
-      "justfile" = "makefile";
-    };
-  };
-  vscodeBaseSettings = pkgs.writeText "vscode-nix-settings.json" (builtins.toJSON
-    (vscodeManagedSettings // {
-      "settingsSync.ignoredSettings" = builtins.attrNames vscodeManagedSettings;
-    }));
-in {
+{
   # VS Code. Extensions come from the nix-vscode-extensions marketplace overlay
   # (works because this is the official MS build on FHS Ubuntu). Settings are
-  # managed by home.activation.vscodeSettings (writable file, not a store
-  # symlink) — edit vscodeBaseSettings in the let block above. Keep VS Code
-  # Settings Sync disabled.
+  # NOT Nix-managed: Will uses VS Code Settings Sync (cloud) for settings.json,
+  # so Nix only owns extensions here.
   programs.vscode = {
     enable = true;
     # Mutable extensions dir: the declared set below is installed, but VS Code
@@ -85,68 +48,6 @@ in {
       ];
     };
   };
-
-  # Write a writable settings.json (not a store symlink) so VSCode can persist
-  # extension popup responses. On each switch: merge surviving VSCode-written keys
-  # with the Nix base (Nix wins on conflict). Also writes .nix-settings-base.json
-  # as a snapshot for dotfiles-sync to diff against when adopting new keys.
-  home.activation.vscodeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    _cfg="$HOME/.config/Code/User"
-    _settings="$_cfg/settings.json"
-    _base="${vscodeBaseSettings}"
-    mkdir -p "$_cfg"
-    cp --no-preserve=mode --remove-destination "$_base" "$_cfg/.nix-settings-base.json"
-    if [ -f "$_settings" ] && [ ! -L "$_settings" ]; then
-      # VSCode writes JSONC (trailing commas, // comments); strip those before
-      # merging so jq can parse it. Activation's PATH is nix-only, so python3
-      # must be referenced by store path, not looked up on PATH.
-      # Comment stripping is string-aware (tracks in_str) so it doesn't treat
-      # glob patterns like "*/.yml" or "**/foo" inside string values as
-      # comment delimiters.
-      _clean=$(${pkgs.python3}/bin/python3 -c "
-import json, re, sys
-def strip_comments(t):
-    out = []
-    i = 0
-    n = len(t)
-    in_str = False
-    while i < n:
-        c = t[i]
-        if in_str:
-            out.append(c)
-            if c == \"\\\\\" and i + 1 < n:
-                out.append(t[i+1]); i += 2; continue
-            if c == \"\\\"\":
-                in_str = False
-            i += 1; continue
-        if c == \"\\\"\":
-            in_str = True; out.append(c); i += 1; continue
-        if c == \"/\" and i + 1 < n and t[i+1] == \"/\":
-            while i < n and t[i] != \"\n\": i += 1
-            continue
-        if c == \"/\" and i + 1 < n and t[i+1] == \"*\":
-            i += 2
-            while i + 1 < n and not (t[i] == \"*\" and t[i+1] == \"/\"): i += 1
-            i += 2
-            continue
-        out.append(c); i += 1
-    return \"\".join(out)
-t = open(sys.argv[1]).read()
-t = strip_comments(t)
-t = re.sub(r',(\s*[}\]])', r'\1', t)
-print(json.dumps(json.loads(t)))
-" "$_settings" 2>/dev/null)
-      if [ -n "$_clean" ]; then
-        echo "$_clean" | ${pkgs.jq}/bin/jq -s '.[0] * .[1]' - "$_base" > "$_settings.tmp"
-        mv "$_settings.tmp" "$_settings"
-      else
-        cp --no-preserve=mode "$_base" "$_settings"
-      fi
-    else
-      rm -f "$_settings"
-      cp --no-preserve=mode "$_base" "$_settings"
-    fi
-  '';
 
   # On a fresh machine ~/.vscode/extensions doesn't exist yet, so
   # home-manager's own extension-symlinking activation script fails its first
