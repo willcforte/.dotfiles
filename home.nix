@@ -73,6 +73,10 @@ in {
     procs
     just
 
+    # LaTeX toolchain
+    tectonic
+    tex-fmt
+
     # Structural code search/rewrite (AST patterns) + YAML processor (jq for YAML)
     ast-grep
     yq-go
