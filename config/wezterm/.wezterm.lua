@@ -10,10 +10,11 @@ local regular_weight = is_mac and 375 or 'Medium'
 -- the default (non-condensed) width, silently landing on an oblique cut
 -- for supposedly-upright text. Pointing font_dirs at it makes WezTerm use
 -- its own internal font scanner instead, which resolves the same file
--- correctly.
+-- correctly — including the Condensed width axis that fontconfig couldn't.
 config.font_dirs = { wezterm.home_dir .. '/.nix-profile/share/fonts/truetype' }
 config.font = wezterm.font('Berkeley Mono Variable', {
   weight = regular_weight,
+  stretch = 'Condensed',
 })
 config.font_size = 18
 
