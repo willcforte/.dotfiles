@@ -21,6 +21,8 @@ fi
 DOTFILES="$HOME/.dotfiles"
 cd "$DOTFILES"
 
+[ -d "$HOME/.dotfiles-private" ] || echo "WARNING: ~/.dotfiles-private not cloned — private assets (e.g. licensed fonts) will be missing; clone it with: git clone git@github.com:willcforte/.dotfiles-private ~/.dotfiles-private" >&2
+
 #-----------------------------------------------------------
 # 1. apt packages (guarded: skip the whole section — and its sudo — when every
 #    package in packages/apt.txt is already installed).
