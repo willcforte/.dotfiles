@@ -2,7 +2,7 @@
   nixpkgs.hostPlatform = "aarch64-darwin";
 
   # Nix itself is installed and managed by the plain Nix installer (see
-  # install-darwin.sh), not nix-darwin, to avoid two tools fighting over
+  # install.sh), not nix-darwin, to avoid two tools fighting over
   # /etc/nix/nix.conf and the daemon.
   nix.enable = false;
 

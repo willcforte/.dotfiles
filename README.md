@@ -21,8 +21,7 @@ system-level config.
 ## Layout
 
 ```
-install.sh            # Linux single entry point: installs missing prereqs + applies config (== update-config)
-install-darwin.sh     # macOS single entry point: installs missing prereqs + applies config (== update-config)
+install.sh            # single entry point (Linux + macOS): installs missing prereqs + applies config (== update-config)
 flake.nix             # flake inputs + per-system homeConfigurations + systemConfigs/darwinConfigurations
 home.nix              # shared base config: packages, git, and the dotfiles (home.file)
 system.nix            # Linux system-level config (/etc, systemd) via numtide/system-manager
@@ -46,11 +45,13 @@ Platform-specific modules are gated in `home.nix` via `lib.optionals isDarwin`
 `imports` — see flake.nix), letting the same `home.nix` evaluate on both
 `x86_64-linux` and `aarch64-darwin`.
 
-Both platforms use a **single idempotent script** for both first-time install
-and day-to-day updates — run it anytime; it installs whatever prerequisites
-are missing and then applies the flake config. After the first run it's
-symlinked to `~/.local/bin/update-config`, so `update-config` and the install
-script are interchangeable.
+Both platforms use the same **single idempotent script** for both first-time
+install and day-to-day updates — run it anytime; it installs whatever
+prerequisites are missing (branching per-OS only where the steps genuinely
+differ, e.g. apt vs Homebrew, or system-manager vs nix-darwin) and then
+applies the flake config. After the first run it's symlinked to
+`~/.local/bin/update-config`, so `update-config` and the install script are
+interchangeable.
 
 ## Install / update (Ubuntu)
 
@@ -72,27 +73,26 @@ is reliable on Linux (the macOS box uses the plain installer instead).
 
 ## Install / update (macOS)
 
-macOS uses the same **single idempotent script** pattern — run it anytime; it
-installs whatever prerequisites are missing (Nix, Homebrew, rustup, pixi) and
-then applies the flake config:
+Same script — run it anytime; it installs whatever prerequisites are missing
+(Nix, Homebrew, rustup, pixi) and then applies the flake config:
 
 ```bash
 git clone https://github.com/willcforte/.dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
-./install-darwin.sh    # first run: needs sudo (activation) + a browser (gh auth login)
+./install.sh           # first run: needs sudo (activation) + a browser (gh auth login)
 ```
 
 After the first run it's symlinked to `~/.local/bin/update-config`, so from
 then on either command does the same install-or-update:
 
 ```bash
-update-config          # == ./install-darwin.sh
+update-config          # == ./install.sh
 ```
 
-`install-darwin.sh` uses the plain upstream Nix installer rather than the
-Determinate Systems installer used on Linux — the latter currently crashes on
-Apple Silicon while reading TLS trust certs from Keychain during encrypted
-Nix Store volume creation ([nix-installer#1514](https://github.com/DeterminateSystems/nix-installer/issues/1514)).
+On macOS it uses the plain upstream Nix installer rather than the Determinate
+Systems installer used on Linux — the latter currently crashes on Apple
+Silicon while reading TLS trust certs from Keychain during encrypted Nix
+Store volume creation ([nix-installer#1514](https://github.com/DeterminateSystems/nix-installer/issues/1514)).
 
 The macOS host is `will-mbp` (a flake attribute name only — the real system
 hostname is MDM-managed and left untouched). Homebrew casks for GUI apps are
