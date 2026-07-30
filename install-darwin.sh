@@ -10,6 +10,8 @@ set -euo pipefail
 # from the repo or via the ~/.local/bin/update-config symlink.
 DOTFILES="$HOME/.dotfiles"
 
+[ -d "$HOME/.dotfiles-private" ] || echo "WARNING: ~/.dotfiles-private not cloned — private assets (e.g. licensed fonts) will be missing; clone it with: git clone git@github.com:willcforte/.dotfiles-private ~/.dotfiles-private" >&2
+
 #-----------------------------------------------------------
 # 1. Nix (multi-user/daemon install via the plain upstream installer). The
 #    Determinate Systems installer (used on Linux, see install.sh) currently
