@@ -27,8 +27,8 @@ in {
     ./modules/programs/git.nix
     ./modules/shell/common.nix
     ./modules/shell/zsh.nix
-  ] ++ lib.optionals (!isDarwin) [
     ./modules/fonts.nix
+  ] ++ lib.optionals (!isDarwin) [
     ./modules/gnome.nix
     ./modules/programs/zen.nix
     ./modules/programs/vscode.nix

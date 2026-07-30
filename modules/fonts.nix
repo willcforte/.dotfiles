@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }:
+{ pkgs, inputs, lib, isDarwin, ... }:
 let
   berkeley-mono = pkgs.stdenvNoCC.mkDerivation {
     pname = "berkeley-mono";
@@ -33,8 +33,9 @@ let
   };
 in {
   home.packages = [
+    berkeley-mono                                   # Berkeley Mono Variable (wezterm, both platforms)
+  ] ++ lib.optionals (!isDarwin) [
     sf-pro-fonts                                    # SF Pro Display / Text (GNOME)
-    berkeley-mono                                   # Berkeley Mono Variable (wezterm)
     pkgs.nerd-fonts.iosevka                         # "Iosevka Nerd Font" (VSCode)
     (pkgs.iosevka-bin.override { variant = "SGr-IosevkaTermSS18"; })  # IosevkaTerm SS18 (GNOME mono)
   ];
