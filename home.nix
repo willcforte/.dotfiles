@@ -143,11 +143,12 @@ in {
       source = ./bin/gnome-settings-export;
       executable = true;
     };
-    # Single idempotent install-or-update script per platform: installs missing
-    # prereqs then applies the flake config. Same command (`update-config`) on
-    # both; guarded so routine updates skip the heavy/sudo bits.
+    # Single idempotent install-or-update script for both platforms: installs
+    # missing prereqs then applies the flake config. Same command
+    # (`update-config`) on both; guarded so routine updates skip the
+    # heavy/sudo bits.
     ".local/bin/update-config" = {
-      source = if isDarwin then ./install-darwin.sh else ./install.sh;
+      source = ./install.sh;
       executable = true;
     };
     ".local/bin/ts-ssh" = {
