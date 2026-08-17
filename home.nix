@@ -135,6 +135,31 @@ in {
     run ln -sf "$HOME/.npm-global/bin/linear" "$HOME/.local/bin/linear"
   '';
 
+  # LocalSend (GUI file-transfer app, AirDrop alternative). The Nix-built
+  # package crashes its GTK compositor on this NVIDIA host: Flutter's GtkGLArea
+  # fails EGL config negotiation entirely (see localsend/localsend#1699).
+  # Flatpak works, but only when org.freedesktop.Platform.GL.nvidia-<version>
+  # matches the currently loaded driver — a stale runtime reproduces the exact
+  # same failure (confirmed: 580-142 broken, 580-173-02 clean, driver is
+  # 580.173.02). --user avoids sudo; --or-update makes reruns a no-op once
+  # current. Needs 53317/tcp+udp open on the host firewall; see
+  # hosts/persona-0020.nix.
+  home.activation.localSendFlatpak = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if command -v flatpak >/dev/null 2>&1; then
+      # flathub is typically only registered as a system remote (added by the
+      # OS installer); --user installs need their own user-scoped remote.
+      run flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+      run flatpak install --user --noninteractive --assumeyes --or-update flathub org.localsend.localsend_app
+
+      if command -v nvidia-smi >/dev/null 2>&1; then
+        nvidiaGLVersion="$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | tr '.' '-')"
+        run flatpak install --user --noninteractive --assumeyes --or-update flathub \
+          "org.freedesktop.Platform.GL.nvidia-$nvidiaGLVersion" \
+          "org.freedesktop.Platform.GL32.nvidia-$nvidiaGLVersion" || true
+      fi
+    fi
+  '';
+
   # Symlinks to dotfiles
   home.file = {
     ".wezterm.lua".source = liveLink "config/wezterm/.wezterm.lua";

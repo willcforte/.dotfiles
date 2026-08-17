@@ -2,6 +2,7 @@ local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 
 config.color_scheme = 'GruvboxLight'
+-- config.color_scheme = 'rose-pine-dawn'
 local is_mac = wezterm.target_triple:find('apple') ~= nil
 local regular_weight = is_mac and 375 or 'Medium'
 
@@ -60,12 +61,10 @@ config.colors = {
 config.enable_wayland = false
 
 config.keys = {
-  -- Send SIGINT
-  { key = 'c', mods = 'SUPER', action = wezterm.action.SendKey { key = 'c', mods = 'CTRL' } },
   -- Copy selection
-  { key = 'c', mods = 'CTRL', action = wezterm.action.CopyTo 'Clipboard' },
+  { key = 'c', mods = 'SUPER', action = wezterm.action.CopyTo 'Clipboard' },
   -- Paste
-  { key = 'v', mods = 'CTRL', action = wezterm.action.PasteFrom 'Clipboard' },
+  { key = 'v', mods = 'SUPER', action = wezterm.action.PasteFrom 'Clipboard' },
 }
 
 return config
