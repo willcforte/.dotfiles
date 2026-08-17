@@ -62,12 +62,10 @@ config.colors = {
 config.enable_wayland = false
 
 config.keys = {
-  -- Send SIGINT
-  { key = 'c', mods = 'SUPER', action = wezterm.action.SendKey { key = 'c', mods = 'CTRL' } },
   -- Copy selection
-  { key = 'c', mods = 'CTRL', action = wezterm.action.CopyTo 'Clipboard' },
+  { key = 'c', mods = 'SUPER', action = wezterm.action.CopyTo 'Clipboard' },
   -- Paste
-  { key = 'v', mods = 'CTRL', action = wezterm.action.PasteFrom 'Clipboard' },
+  { key = 'v', mods = 'SUPER', action = wezterm.action.PasteFrom 'Clipboard' },
 }
 
 return config
