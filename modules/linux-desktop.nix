@@ -1,4 +1,9 @@
-{ pkgs, ... }: {
+{ pkgs, inputs, ... }:
+let
+  # Pinned to the last nixpkgs commit where dwarfs (gearlever's dependency)
+  # built successfully; see flake.nix's nixpkgs-gearlever input.
+  gearlever = inputs.nixpkgs-gearlever.legacyPackages.${pkgs.stdenv.hostPlatform.system}.gearlever;
+in {
   home.packages = with pkgs; [
     gearlever
     pinta
