@@ -2,6 +2,7 @@ local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 
 config.color_scheme = 'GruvboxLight'
+-- config.color_scheme = 'rose-pine-dawn'
 local is_mac = wezterm.target_triple:find('apple') ~= nil
 local regular_weight = is_mac and 375 or 'Medium'
 
