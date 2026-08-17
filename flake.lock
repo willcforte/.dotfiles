@@ -212,6 +212,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-gearlever": {
+      "locked": {
+        "lastModified": 1784783405,
+        "narHash": "sha256-4IHyyLgLBdKefkljdKod4IMn023pQiDXAWJA187cmdY=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "7525d999cd850b9a488817abc89c75dc733acf17",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "7525d999cd850b9a488817abc89c75dc733acf17",
+        "type": "github"
+      }
+    },
     "nixpkgs_2": {
       "locked": {
         "lastModified": 1786862985,
@@ -265,6 +281,7 @@
         "nix-system-graphics": "nix-system-graphics",
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs_2",
+        "nixpkgs-gearlever": "nixpkgs-gearlever",
         "solaar": "solaar",
         "system-manager": "system-manager",
         "zen-browser": "zen-browser"

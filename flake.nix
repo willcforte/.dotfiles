@@ -49,6 +49,12 @@
       flake = false;
     };
 
+    # gearlever's dwarfs dependency fails to build on current nixpkgs (missing
+    # <cstring> include in folly under the newer gcc); pinned to the last
+    # nixpkgs commit where it built successfully, until upstream fixes it.
+    # See modules/linux-desktop.nix.
+    nixpkgs-gearlever.url = "github:NixOS/nixpkgs/7525d999cd850b9a488817abc89c75dc733acf17";
+
     # macOS system config (this Mac's analogue of system-manager on Linux).
     # Pinned to a commit contemporaneous with the nixpkgs pin: nix-darwin master
     # later started passing `--sidebar-depth` to nixos-render-docs, which our
