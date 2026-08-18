@@ -12,18 +12,15 @@
       };
     };
 
-    # 1. Add your custom JJ module into your prompt layout string
+    # jj revision in the prompt, via the jj-starship binary. Only runs in
+    # repos with a .jj directory.
     settings.format = "$all\${custom.jj}$character";
-
-    # 2. Define the custom JJ module block
     settings.custom.jj = {
       command = "prompt";
       format = "on [$output](bold purple) ";
       ignore_timeout = true;
-      # Calls the 'jj-starship' binary in the shell 
       shell = ["jj-starship" "--ignore-working-copy" "starship"];
       use_stdin = false;
-      # Only triggers the command if a .jj directory exists
       when = "test -d .jj";
     };
   };

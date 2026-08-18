@@ -7,7 +7,6 @@
     historyFileSize = 2000;
     shellAliases = {
       ccode = "claude --system-prompt \"\"";
-      #ccbare = "claude --bare";
       ls = "ls --color=auto";
       grep = "grep --color=auto";
       ll = "ls -alF";

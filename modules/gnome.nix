@@ -58,17 +58,5 @@ with lib.hm.gvariant;
       last-version-installed = 46;
       tiling-popup-all-workspace = true;
     };
-
-    "org/gnome/terminal/legacy/profiles:" = {
-      default = "b1dcc9dd-5262-4d8d-a863-c897e6d979b9";
-      list = [ "b1dcc9dd-5262-4d8d-a863-c897e6d979b9" ];
-    };
-
-    "org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9" = {
-      default-size-columns = 80;
-      use-system-font = true;
-      visible-name = "Will";
-    };
-
   };
 }
