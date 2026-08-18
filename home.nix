@@ -41,28 +41,21 @@ in {
   ];
 
   home.packages = with pkgs; [
+    # version control
     gh
+    gh-dash
+    lazygit
+    lazydocker
+    jujutsu
+    lazyjj
+
+    # CLI tools
     neovim
     tmux
     btop
     tree
-    lazygit
-    lazydocker
-    jujutsu
-    lazyjj
-
-    # version control
-    gh
-    lazygit
-    lazydocker
-    jujutsu
-    lazyjj
-    gh-dash
-
-    # CLI tools
     lsd
     nmap
-    vim
     tldr
     fzf
     bat
@@ -95,8 +88,6 @@ in {
     pre-commit
 
     uv
-
-    tailscale
 
     # CLI proxy that cuts LLM token use on common dev commands
     rtk

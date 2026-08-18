@@ -2,13 +2,10 @@
 
 # Private Claude Code data lives as real files under ~/.claude (memory,
 # commands, CLAUDE.md, credentials) and is intentionally NOT stored here.
-# Only config/claude/settings.json is tracked. These globs are defense-in-depth
-# in case any private Claude data ever lands in the working tree.
+# These globs are defense-in-depth in case any private Claude data ever lands
+# in the working tree.
 **/.claude/
 **/.credentials.json
-config/claude/memory/
-config/claude/commands/
-config/claude/CLAUDE.md
 
 # Persona company build script (never publish)
 packages/from-source/persona_rl.sh
