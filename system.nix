@@ -1,7 +1,55 @@
 # System-level config managed by numtide/system-manager.
 # Activated separately from home-manager via `update-config`
 # (nix run github:numtide/system-manager -- switch --flake . --sudo).
-{ ... }: {
+{ ... }:
+let
+  logitechUdevRules = ''
+    # This rule was added by Solaar.
+    #
+    # Allows non-root users to have raw access to Logitech devices.
+    # Allowing users to write to the device is potentially dangerous
+    # because they could perform firmware updates.
+    KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"
+
+    ACTION == "remove", GOTO="solaar_end"
+    SUBSYSTEM != "hidraw", GOTO="solaar_end"
+
+    # USB-connected Logitech receivers and devices
+    ATTRS{idVendor}=="046d", GOTO="solaar_apply"
+
+    # Lenovo nano receiver
+    ATTRS{idVendor}=="17ef", ATTRS{idProduct}=="6042", GOTO="solaar_apply"
+
+    # Bluetooth-connected Logitech devices
+    KERNELS == "0005:046D:*", GOTO="solaar_apply"
+
+    GOTO="solaar_end"
+
+    LABEL="solaar_apply"
+
+    # Allow any seated user to access the receiver.
+    # uaccess: modern ACL-enabled udev
+    TAG+="uaccess"
+
+    # Grant members of the "plugdev" group access to receiver (useful for SSH users)
+    #MODE="0660", GROUP="plugdev"
+
+    LABEL="solaar_end"
+    # vim: ft=udevrules
+  '';
+
+  # Grants raw HID access to Keychron keyboards (e.g. Q65) so the VIA-based
+  # web configurator at launcher.keychron.com can see the device over
+  # WebHID in Chrome. TAG+="uaccess" alone depends on systemd-logind applying
+  # a seat ACL, which doesn't always land promptly for an already-plugged-in
+  # device (seen as "HID device connected" but the launcher hangs); MODE +
+  # GROUP is a static fallback so access doesn't depend on ACL timing.
+  keychronUdevRules = ''
+    KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3434", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+    # vim: ft=udevrules
+  '';
+in
+{
   config = {
     nixpkgs.hostPlatform = "x86_64-linux";
 
@@ -35,39 +83,23 @@
       Unattended-Upgrade::Allowed-Origins:: "''${distro_id}:''${distro_codename}-updates";
     '';
 
-    environment.etc."udev/rules.d/42-logitech-unify-permissions.rules".text = ''
-      # This rule was added by Solaar.
-      #
-      # Allows non-root users to have raw access to Logitech devices.
-      # Allowing users to write to the device is potentially dangerous
-      # because they could perform firmware updates.
-      KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"
+    environment.etc."udev/rules.d/42-logitech-unify-permissions.rules".text = logitechUdevRules;
+    environment.etc."udev/rules.d/43-keychron-permissions.rules".text = keychronUdevRules;
 
-      ACTION == "remove", GOTO="solaar_end"
-      SUBSYSTEM != "hidraw", GOTO="solaar_end"
-
-      # USB-connected Logitech receivers and devices
-      ATTRS{idVendor}=="046d", GOTO="solaar_apply"
-
-      # Lenovo nano receiver
-      ATTRS{idVendor}=="17ef", ATTRS{idProduct}=="6042", GOTO="solaar_apply"
-
-      # Bluetooth-connected Logitech devices
-      KERNELS == "0005:046D:*", GOTO="solaar_apply"
-
-      GOTO="solaar_end"
-
-      LABEL="solaar_apply"
-
-      # Allow any seated user to access the receiver.
-      # uaccess: modern ACL-enabled udev
-      TAG+="uaccess"
-
-      # Grant members of the "plugdev" group access to receiver (useful for SSH users)
-      #MODE="0660", GROUP="plugdev"
-
-      LABEL="solaar_end"
-      # vim: ft=udevrules
-    '';
+    # system-manager doesn't own the host's systemd-udevd, so unlike NixOS
+    # proper, writing new rules under environment.etc doesn't reload udev or
+    # re-trigger already-connected devices. Re-run reload+trigger whenever
+    # rule content changes so a device plugged in before activation (e.g. the
+    # Keychron Q65 above) picks up new permissions without a manual replug.
+    systemd.services.reload-udev-rules = {
+      description = "Reload udev rules and re-trigger devices after activation";
+      wantedBy = [ "system-manager.target" ];
+      restartTriggers = [ logitechUdevRules keychronUdevRules ];
+      serviceConfig.Type = "oneshot";
+      script = ''
+        /usr/bin/udevadm control --reload-rules
+        /usr/bin/udevadm trigger
+      '';
+    };
   };
 }
